@@ -53,7 +53,7 @@ class _DetailPageState extends State<DetailPage> {
         child: Container(
           margin: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            borderRadius: globals.defaultRadius,
+            borderRadius: globals.DefaultRadius,
             color: globals.IdentityColor
           ),
           child: Row(
@@ -105,7 +105,7 @@ class _DetailPageState extends State<DetailPage> {
       child: Container(
         margin: const EdgeInsets.fromLTRB(5, 10, 5, 10),
         decoration: BoxDecoration(
-          borderRadius: globals.defaultRadius,
+          borderRadius: globals.DefaultRadius,
           color: globals.IdentityColor
         ),
         child: Column(
@@ -129,7 +129,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
             const SizedBox(
               height: 45,
-              child: StarAnim(size: 24),
+              child: StarAnim(beginSize: 24, endSize: 32),
             ),
             const SizedBox(
               height: 45,

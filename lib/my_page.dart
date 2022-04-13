@@ -47,7 +47,7 @@ class _MyPageState extends State<MyPage> {
               margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,
-                borderRadius: globals.defaultRadius
+                borderRadius: globals.DefaultRadius
               ),
               child: Row(
                 children: [

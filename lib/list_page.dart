@@ -47,7 +47,7 @@ class _ListPageState extends State<ListPage> {
               margin: const EdgeInsets.fromLTRB(15, 4, 15, 4),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,
-                borderRadius: globals.defaultRadius
+                borderRadius: globals.DefaultRadius
               ),
               child: Row(
                 children: [

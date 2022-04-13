@@ -14,22 +14,23 @@ class TabButtonModel with ChangeNotifier {
     return this.index == index ? matched : unmatched;
   }
 
-  double animateSize(int index) {
-    return this.index == index ? globals.tabBoxSize : 34;
-  }
-
   double translateX(int index) {
     if (this.index == 0) {
-      return globals.tabBoxSize;
+      return globals.MaxTabBoxSize;
     }
     else if (this.index == 1) {
       return 0;
     }
     else {
-      return -globals.tabBoxSize;
+      return -globals.MaxTabBoxSize;
     }
   }
+
   double animateMargin(int index) {
     return this.index == index ? 20 : 0;
+  }
+
+  bool canAnimate(int index) {
+    return this.index == index;
   }
 }

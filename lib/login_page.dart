@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                 margin: const EdgeInsets.fromLTRB(25, 0, 25, 0),
                 decoration: BoxDecoration(
                   color: globals.LoginBackground,
-                  borderRadius: globals.defaultRadius,
+                  borderRadius: globals.DefaultRadius,
                 ),
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),

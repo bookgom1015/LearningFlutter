@@ -13,6 +13,7 @@ class HeartAnim extends StatefulWidget {
 
 class _HeartAnimState extends State<HeartAnim> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _curveAnimation;
   late Animation _colorAnimation;
   late Animation _sizeAnimation;
 
@@ -25,10 +26,15 @@ class _HeartAnimState extends State<HeartAnim> with SingleTickerProviderStateMix
       duration: const Duration(milliseconds: 150)
     );
 
+    _curveAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.slowMiddle
+    );
+
     _colorAnimation = ColorTween(
       begin: globals.UnfocusedForeground,
       end: Colors.red
-    ).animate(_controller);
+    ).animate(_curveAnimation);
 
     _sizeAnimation = TweenSequence(
       <TweenSequenceItem<double>>[
@@ -41,7 +47,7 @@ class _HeartAnimState extends State<HeartAnim> with SingleTickerProviderStateMix
           weight: 50
         )
       ]
-    ).animate(_controller);
+    ).animate(_curveAnimation);
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
