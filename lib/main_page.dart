@@ -39,8 +39,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pageList = [
-      const PublicPage(), 
-      ListPage(context: context), 
+      PublicPage(context: context, pageController: _pageController), 
+      ListPage(context: context, pageController: _pageController), 
       const MyPage()
     ];
 

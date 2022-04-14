@@ -35,16 +35,14 @@ class _MyPageState extends State<MyPage> {
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(               
-        margin: const EdgeInsets.fromLTRB(15, 4, 15, 4),     
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0), 
         child: ListView.builder(
-          padding: const EdgeInsets.only(
-            bottom: 70
-          ),
+          padding: const EdgeInsets.only(bottom: 80),
           itemCount: _menuList.length,
           itemBuilder: (context, index) {
             return Container(
               height: 50,
-              margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,
                 borderRadius: globals.DefaultRadius

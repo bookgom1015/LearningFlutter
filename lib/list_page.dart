@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
 class ListPage extends StatefulWidget {
   final BuildContext context;
+  final PageController pageController;
 
-  const ListPage({Key? key, required this.context}) : super(key: key);
+  const ListPage({Key? key, required this.context, required this.pageController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ListPageState();
@@ -27,34 +29,66 @@ class _ListPageState extends State<ListPage> {
     Group("assets/images/creeper_128x128.jpg", "Title 13", "Host 13", ["Skia, Direct2D"]),
   ];
 
+  final FocusNode _searchBarFocusNode = FocusNode();
+  final TextEditingController _searchBarController = TextEditingController();
+
+  @override
+  void initState() {
+    widget.pageController.addListener(() {
+      if(_searchBarFocusNode.hasFocus) {
+        SearchBarLostedFocus();
+      }
+    });
+    super.initState();
+  }
+
+  // ignore: non_constant_identifier_names
+  void SearchBarLostedFocus() {
+    _searchBarFocusNode.unfocus();
+    _searchBarController.clear();
+  }
+
   @override
   Widget build(BuildContext _) {
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
-      body: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 70),
-        itemCount: _groups.length,
-        itemBuilder: (_, index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(widget.context, "/detail", arguments: { "index": index });
-            },
-            child: Container(
-              height: 64,
-              margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-              decoration: BoxDecoration(
-                color: globals.IdentityColor,
-                borderRadius: globals.DefaultRadius
-              ),
-              child: Row(
-                children: [
-                  ImageBox(index),
-                  PostDesc(index),
-                ],
+      body: Container(
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
+        child: Column(
+          children: [
+            SearchBar(focusNode: _searchBarFocusNode, controller: _searchBarController),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 80),
+                itemCount: _groups.length,
+                itemBuilder: (_, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      if(_searchBarFocusNode.hasFocus) {
+                        SearchBarLostedFocus();
+                      }
+                      Navigator.pushNamed(widget.context, "/detail", arguments: { "index": index });
+                    },
+                    child: Container(
+                      height: 64,
+                      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                      decoration: BoxDecoration(
+                        color: globals.IdentityColor,
+                        borderRadius: globals.DefaultRadius
+                      ),
+                      child: Row(
+                        children: [
+                          ImageBox(index),
+                          PostDesc(index),
+                        ],
+                      )
+                    ),
+                  );
+                },
               )
-            ),
-          );
-        },
+            )
+          ]
+        )
       )
     );
   }

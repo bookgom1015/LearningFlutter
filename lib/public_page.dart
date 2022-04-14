@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/public.dart';
+import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
 class PublicPage extends StatefulWidget {
-  const PublicPage({Key? key}) : super(key: key);
+  final BuildContext context;
+  final PageController pageController;
+
+  const PublicPage({Key? key, required this.context, required this.pageController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _PublicPageState();  
@@ -27,102 +31,99 @@ class _PublicPageState extends State<PublicPage> {
     Public("assets/images/creeper_128x128.jpg", "Title 14", "ojcvlvcjroejwpejf fjawepofj ejwfwef"),
   ];
 
-  FocusNode _focusNode = FocusNode();
-  bool searchBarFocused = false;
+  final FocusNode _searchBarFocusNode = FocusNode();
+  final TextEditingController _searchBarController = TextEditingController();
 
   @override
   void initState() {
-    _focusNode.addListener(() {
-      setState(() {
-        searchBarFocused = _focusNode.hasFocus;
-      });
+    widget.pageController.addListener(() {
+      if(_searchBarFocusNode.hasFocus) {
+        SearchBarLostedFocus();
+      }
     });
     super.initState();
+  }
+
+  // ignore: non_constant_identifier_names
+  void SearchBarLostedFocus() {
+    _searchBarFocusNode.unfocus();
+    _searchBarController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
         decoration: const BoxDecoration(
           color: globals.BackgroundColor
         ),
         child: Column(
           children: [
-            Container(
-              margin: const EdgeInsets.only(bottom: 15),
-              child: TextFormField(
-                focusNode: _focusNode,
-                decoration: InputDecoration(
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: globals.UnfocusedForeground)
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: globals.FocusedForeground)
-                  ),
-                  suffixIcon: Icon(
-                    Icons.search,
-                    color: searchBarFocused ?globals.FocusedForeground : globals.UnfocusedForeground
-                  )
-                ),            
-              )
-            ),
+            SearchBar(focusNode: _searchBarFocusNode, controller: _searchBarController),
             Expanded(
               child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 80),
                 itemCount: _publicList.length,
                 itemBuilder: (_, index) {
-                  return Container(
-                    height: 64,
-                    margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-                    decoration: BoxDecoration(
-                      color: globals.IdentityColor,
-                      borderRadius: globals.DefaultRadius
-                    ),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                bottomLeft: Radius.circular(10),                
+                  return GestureDetector(
+                    onTap: () {
+                      if(_searchBarFocusNode.hasFocus) {
+                        SearchBarLostedFocus();
+                      }
+                      Navigator.pushNamed(widget.context, "/public_post", arguments: { "index": index });
+                    },
+                    child: Container(
+                      height: 64,
+                      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                      decoration: BoxDecoration(
+                        color: globals.IdentityColor,
+                        borderRadius: globals.DefaultRadius
+                      ),
+                      child: GestureDetector(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(10),
+                                  bottomLeft: Radius.circular(10),                
+                                ),
+                                image: DecorationImage(image: AssetImage(_publicList[index].image))
                               ),
-                              image: DecorationImage(image: AssetImage(_publicList[index].image))
                             ),
-                          ),
-                          Flexible(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(15, 0, 5, 0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _publicList[index].title,                                        
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: globals.FocusedForeground
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(15, 0, 5, 0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _publicList[index].title,                                        
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: globals.FocusedForeground
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    _publicList[index].desc,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: globals.FocusedForeground
-                                    ),
-                                  )
-                                ],
+                                    Text(
+                                      _publicList[index].desc,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: globals.FocusedForeground
+                                      ),
+                                    )
+                                  ],
+                                )
                               )
                             )
-                          )
-                        ],
-                      ),
+                          ],
+                        )
+                      )
                     )
                   );
                 },
