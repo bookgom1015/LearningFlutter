@@ -32,10 +32,7 @@ class _ListPageState extends State<ListPage> {
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: ListView.builder(
-        padding: const EdgeInsets.only(
-          top: 10,
-          bottom: 70
-        ),
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 70),
         itemCount: _groups.length,
         itemBuilder: (_, index) {
           return GestureDetector(
@@ -44,7 +41,7 @@ class _ListPageState extends State<ListPage> {
             },
             child: Container(
               height: 64,
-              margin: const EdgeInsets.fromLTRB(15, 4, 15, 4),
+              margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,
                 borderRadius: globals.DefaultRadius
@@ -74,13 +71,13 @@ class _ListPageState extends State<ListPage> {
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-             ),
-             image: DecorationImage(
+                bottomLeft: Radius.circular(10),                
+              ),
+              image: DecorationImage(
                image: AssetImage(_groups[index].image)
-             )
-           )
-         )
+              )
+            )
+          )
         )
       ],
     );
