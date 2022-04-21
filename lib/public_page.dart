@@ -31,6 +31,10 @@ class _PublicPageState extends State<PublicPage> {
     Public("assets/images/creeper_128x128.jpg", "Title 14", "ojcvlvcjroejwpejf fjawepofj ejwfwef"),
   ];
 
+  final List<String> _dropDownMenuItemList = [
+    "One", "Two", "Three", "Four"
+  ];
+
   final FocusNode _searchBarFocusNode = FocusNode();
   final TextEditingController _searchBarController = TextEditingController();
 
@@ -60,7 +64,11 @@ class _PublicPageState extends State<PublicPage> {
         ),
         child: Column(
           children: [
-            SearchBar(focusNode: _searchBarFocusNode, controller: _searchBarController),
+            SearchBar(
+              focusNode: _searchBarFocusNode,
+              controller: _searchBarController,
+              dropDownMenuItemList: _dropDownMenuItemList
+            ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 80),
@@ -106,13 +114,15 @@ class _PublicPageState extends State<PublicPage> {
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.bold,                                        
                                         color: globals.FocusedForeground
                                       ),
                                     ),
                                     Text(
                                       _publicList[index].desc,
                                       overflow: TextOverflow.ellipsis,
+                                      softWrap: false,
+                                      maxLines: 1,
                                       style: const TextStyle(
                                         color: globals.FocusedForeground
                                       ),

@@ -29,6 +29,10 @@ class _ListPageState extends State<ListPage> {
     Group("assets/images/creeper_128x128.jpg", "Title 13", "Host 13", ["Skia, Direct2D"]),
   ];
 
+  final List<String> _dropDownMenuItemList = [
+    "One", "Two", "Three", "Four"
+  ];
+
   final FocusNode _searchBarFocusNode = FocusNode();
   final TextEditingController _searchBarController = TextEditingController();
 
@@ -56,7 +60,11 @@ class _ListPageState extends State<ListPage> {
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
         child: Column(
           children: [
-            SearchBar(focusNode: _searchBarFocusNode, controller: _searchBarController),
+            SearchBar(
+              focusNode: _searchBarFocusNode,
+              controller: _searchBarController,
+              dropDownMenuItemList: _dropDownMenuItemList,
+            ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 80),
