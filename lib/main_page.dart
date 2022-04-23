@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/title_anim.dart';
 import 'package:flutter_application_learning/components/tab_btn_anim.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_application_learning/list_page.dart';
+import 'package:flutter_application_learning/group_list_page.dart';
 import 'package:flutter_application_learning/my_page.dart';
-import 'package:flutter_application_learning/public_page.dart';
+import 'package:flutter_application_learning/post_page_list.dart';
 import 'package:flutter_application_learning/entries/tab_btn_model.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
@@ -20,7 +20,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   late PageController _pageController;
 
-  final List<String> _titleList = ["Open", "List", "MyPage"];
+  final List<String> _titleList = ["Post List", "Group List", "My"];
   late String _title;
 
   @override
@@ -39,8 +39,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pageList = [
-      PublicPage(context: context, pageController: _pageController), 
-      ListPage(context: context, pageController: _pageController), 
+      PostListPage(context: context, pageController: _pageController), 
+      GroupListPage(context: context, pageController: _pageController), 
       const MyPage()
     ];
 

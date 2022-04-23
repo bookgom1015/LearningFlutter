@@ -3,17 +3,17 @@ import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
-class ListPage extends StatefulWidget {
+class GroupListPage extends StatefulWidget {
   final BuildContext context;
   final PageController pageController;
 
-  const ListPage({Key? key, required this.context, required this.pageController}) : super(key: key);
+  const GroupListPage({Key? key, required this.context, required this.pageController}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _ListPageState();
+  State<StatefulWidget> createState() => _GroupListPageState();
 }
 
-class _ListPageState extends State<ListPage> {
+class _GroupListPageState extends State<GroupListPage> {
   final List<Group> _groups = [
     Group("assets/images/creeper_128x128.jpg", "Title 1", "Host 1", ["C"]),
     Group("assets/images/creeper_128x128.jpg", "Title 2", "Host 2", ["C", "C++"]),
@@ -75,7 +75,10 @@ class _ListPageState extends State<ListPage> {
                       if(_searchBarFocusNode.hasFocus) {
                         SearchBarLostedFocus();
                       }
-                      Navigator.pushNamed(widget.context, "/detail", arguments: { "index": index });
+                      Navigator.pushNamed(
+                        widget.context, "/detail_group",
+                        arguments: { "index": index, "image": _groups[index].image }
+                      );
                     },
                     child: Container(
                       height: 64,

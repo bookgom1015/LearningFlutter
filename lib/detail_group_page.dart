@@ -4,14 +4,14 @@ import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
-class DetailPage extends StatefulWidget {
-  const DetailPage({Key? key}) : super(key: key);
+class DetailGroupPage extends StatefulWidget {
+  const DetailGroupPage({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _DetailPageState();  
+  State<StatefulWidget> createState() => _DetailGroupPageState();  
 }
 
-class _DetailPageState extends State<DetailPage> {
+class _DetailGroupPageState extends State<DetailGroupPage> {
   Map _receivedData = {};
 
   @override
@@ -20,7 +20,7 @@ class _DetailPageState extends State<DetailPage> {
 
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar("Detail"),
+        appBar: createAppBar("Detail Group"),
         body: Container(
           decoration: const BoxDecoration(
             color: globals.BackgroundColor
@@ -71,9 +71,9 @@ class _DetailPageState extends State<DetailPage> {
                   child: Hero(
                     tag: _receivedData['index'].toString(),
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage("assets/images/creeper_128x128.jpg"),
+                          image: AssetImage(_receivedData['image']),
                         )
                       )
                     )

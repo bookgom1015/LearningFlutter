@@ -16,21 +16,11 @@ class SearchBar extends StatefulWidget {
 }
 
 class _SearchBarState extends State<SearchBar> {
-  late FocusNode dropDownFocusNode;
-
   bool searchBarFocused = false;
-  bool dropDownFocused = false;
   late String dropDownValue;
 
   @override
   void initState() {
-    dropDownFocusNode = FocusNode();
-    dropDownFocusNode.addListener(() {
-      setState(() {
-        dropDownFocused = dropDownFocusNode.hasFocus;
-      });
-    });
-
     widget.focusNode.addListener(() {
       setState(() {
         searchBarFocused = widget.focusNode.hasFocus;
@@ -59,14 +49,13 @@ class _SearchBarState extends State<SearchBar> {
             borderSide: BorderSide(color: globals.FocusedForeground)
           ),
           prefixIcon: DropdownButton(
-            focusNode: dropDownFocusNode,
             value: dropDownValue,            
-            style: TextStyle(
-              color: (dropDownFocused || searchBarFocused) ? globals.FocusedForeground : globals.UnfocusedForeground,
+            style: const TextStyle(
+              color: globals.FocusedForeground,
             ),
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_drop_down,
-              color: (dropDownFocused || searchBarFocused) ? globals.FocusedForeground : globals.UnfocusedForeground,
+              color: globals.FocusedForeground,
             ),
             underline: const SizedBox(
               width: 0,
