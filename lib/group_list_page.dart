@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
+import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
@@ -15,18 +16,18 @@ class GroupListPage extends StatefulWidget {
 
 class _GroupListPageState extends State<GroupListPage> {
   final List<Group> _groups = [
-    Group("assets/images/creeper_128x128.jpg", "Title 1", "Host 1", ["C"]),
-    Group("assets/images/creeper_128x128.jpg", "Title 2", "Host 2", ["C", "C++"]),
-    Group("assets/images/creeper_128x128.jpg", "Title 3", "Host 3", ["C", "C++", "C#"]),
+    Group("assets/images/creeper_128x128.jpg", "Title 1", "Host 1", ["C", "C", "C", "C", "C", "C", "C", "C", "C", "C", "C"]),
+    Group("assets/images/creeper_128x128.jpg", "Title 2", "Host 2", ["C", "C++", "C", "C++", "C", "C++", "C", "C++", "C", "C++", "C", "C++"]),
+    Group("assets/images/creeper_128x128.jpg", "Title 3", "Host 3", ["C", "C++", "C#", "F#", "Xamarin"]),
     Group("assets/images/creeper_128x128.jpg", "Title 5", "Host 5", ["Java", "Kotlin"]),
     Group("assets/images/creeper_128x128.jpg", "Title 6", "Host 6", ["Android"]),
-    Group("assets/images/creeper_128x128.jpg", "Title 7", "Host 7", ["Android", "IOS"]),
+    Group("assets/images/creeper_128x128.jpg", "Title 7", "Host 7", ["Android", "IOS", "Java", "Swing", "Mac", "Windows", "Linux", "Assembly"]),
     Group("assets/images/creeper_128x128.jpg", "Title 8", "Host 8", ["Windows", "Linux"]),
     Group("assets/images/creeper_128x128.jpg", "Title 9", "Host 9", ["Go", "Ruby", "R"]),
     Group("assets/images/creeper_128x128.jpg", "Title 10", "Host 10", ["OpenCL"]),
     Group("assets/images/creeper_128x128.jpg", "Title 11", "Host 11", ["OpenGL", "DirectX"]),
     Group("assets/images/creeper_128x128.jpg", "Title 12", "Host 12", ["Vulkan", "OpenGL"]),
-    Group("assets/images/creeper_128x128.jpg", "Title 13", "Host 13", ["Skia, Direct2D"]),
+    Group("assets/images/creeper_128x128.jpg", "Title 13", "Host 13", ["Skia", "Direct2D"]),
   ];
 
   final List<String> _dropDownMenuItemList = [
@@ -54,10 +55,19 @@ class _GroupListPageState extends State<GroupListPage> {
 
   @override
   Widget build(BuildContext _) {
+    const double margin = 5;
+    const double outerPadding = 15;
+    const double innerPadding = 15;
+    const double imageBoxSize = 40;
+    const double containerHeight = 70;
+    double deviceWidth = MediaQuery.of(context).size.width;
+    double actualWidth = deviceWidth - outerPadding - outerPadding - innerPadding - innerPadding;
+    double postDescWidth = actualWidth - imageBoxSize;
+
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
+        padding: const EdgeInsets.fromLTRB(outerPadding, 10, outerPadding, 0),
         child: Column(
           children: [
             SearchBar(
@@ -81,16 +91,17 @@ class _GroupListPageState extends State<GroupListPage> {
                       );
                     },
                     child: Container(
-                      height: 64,
-                      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                      height: containerHeight,
+                      padding: const EdgeInsets.fromLTRB(innerPadding, 0, innerPadding, 0),
+                      margin: const EdgeInsets.fromLTRB(0, margin, 0, margin),
                       decoration: BoxDecoration(
                         color: globals.IdentityColor,
                         borderRadius: globals.DefaultRadius
                       ),
                       child: Row(
                         children: [
-                          ImageBox(index),
-                          PostDesc(index),
+                          ImageBox(40, index),
+                          PostDesc(postDescWidth, imageBoxSize, index),
                         ],
                       )
                     ),
@@ -105,19 +116,16 @@ class _GroupListPageState extends State<GroupListPage> {
   }
 
   // ignore: non_constant_identifier_names
-  Widget ImageBox(int index) {
+  Widget ImageBox(double size, int index) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Hero(tag: index.toString(), 
           child: Container(
-            width: 64,
-            height: 64,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                bottomLeft: Radius.circular(10),                
-              ),
+              shape: BoxShape.circle,
               image: DecorationImage(
                image: AssetImage(_groups[index].image)
               )
@@ -129,44 +137,45 @@ class _GroupListPageState extends State<GroupListPage> {
   }
 
   // ignore: non_constant_identifier_names
-  Widget PostDesc(int index) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(                        
-          children: [
-            const SizedBox(width: 15),
-            Text(
-              _groups[index].title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: globals.FocusedForeground
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _groups[index].host,
-              style: const TextStyle(
-                fontSize: 11,
-                color: globals.FocusedForeground
-              ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            const SizedBox(width: 15),
-            Text(
-              _groups[index].tags.join("  /  "),
-              style: const TextStyle(
-                color: globals.FocusedForeground
-              ),
+  Widget PostDesc(double width, double height, int index) {
+    const double padding = 15;
+    double actualWidth = width - padding - padding;
+    double tagsHeight = 20;
+    double titleHeight = height - tagsHeight;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(padding, 0, padding, 0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: actualWidth,
+            height: titleHeight,
+            child: Row(                        
+              children: [
+                Text(
+                  _groups[index].title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: globals.FocusedForeground
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _groups[index].host,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: globals.FocusedForeground
+                  ),
+                ),
+              ],
             )
-          ],
-        )
-      ],
+          ),
+          TagList(width: actualWidth, height: tagsHeight, tagList: _groups[index].tags)          
+        ],
+      )
     );
   }
 }

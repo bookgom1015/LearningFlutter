@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/reply.dart';
@@ -63,6 +61,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
   Widget build(BuildContext context) {
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
 
+    double deviceWidth = MediaQuery.of(context).size.width;
     double extendedHeight = MediaQuery.of(context).size.height * 0.5;
 
     return MaterialApp(
@@ -88,14 +87,26 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
                     height: _shrinkeddHeight + _heightAnimation.value * (extendedHeight - _shrinkeddHeight),
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: globals.IdentityColorDarker20
+                        color: globals.IdentityColorDarker20,
+                        boxShadow: [
+                          BoxShadow(
+                            color: globals.ShadowColor,
+                            spreadRadius: 1,
+                            blurRadius: 8,
+                            offset: Offset(0, 0)
+                          )
+                        ]
                       ),
                       child: Column(
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(
+                              Container(
+                                decoration: const BoxDecoration(
+                                  color: globals.IdentityColorDarker20,                                  
+                                ),
+                                width: deviceWidth,
                                 height: 50,
                                 child: GestureDetector(
                                   onTap: () {
@@ -131,7 +142,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
                                             width: 40,
                                             height: 40,
                                             decoration: BoxDecoration(
-                                              borderRadius: globals.ProfileImageRadius,
+                                              borderRadius: const BorderRadius.all(Radius.circular(20)),
                                               image: DecorationImage(
                                                 image: AssetImage(_replies[index].image),
                                               )
@@ -202,7 +213,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
                     height: 40,
                     margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
-                      borderRadius: globals.ProfileImageRadius,
+                      shape: BoxShape.circle,
                       image: DecorationImage(image: AssetImage(_receivedData['image']))
                     ),
                   )

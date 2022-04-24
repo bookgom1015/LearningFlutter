@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_learning/components/post.dart';
+import 'package:flutter_application_learning/components/tag_list.dart';
+import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
@@ -84,9 +85,15 @@ class _PostListPageState extends State<PostListPage> {
 
   @override
   Widget build(BuildContext context) {
+    const double margin = 5;
+    const double outerHorzPadding = 15;
+    const double innerPadding = 10;
+    double deviceWidth = MediaQuery.of(context).size.width;
+    double actualWidth = deviceWidth - outerHorzPadding - outerHorzPadding - innerPadding - innerPadding;
+
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
+        padding: const EdgeInsets.fromLTRB(outerHorzPadding, 10, outerHorzPadding, 0),
         decoration: const BoxDecoration(
           color: globals.BackgroundColor
         ),
@@ -128,38 +135,32 @@ class _PostListPageState extends State<PostListPage> {
                       );
                     },
                     child: Container(
-                      height: 180,
-                      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                      height: 190,
+                      margin: const EdgeInsets.fromLTRB(0, margin, 0, margin),
                       decoration: BoxDecoration(
                         color: globals.IdentityColor,
                         borderRadius: globals.DefaultRadius
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(innerPadding),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Tags
-                            SizedBox(
-                              height: 20,
-                              child: Text(
-                                tags.toString(),
-                                style: const TextStyle(
-                                  color: globals.FocusedForeground,
-                                  fontSize: 12
-                                ),
-                              )
-                            ),
+                            TagList(width: actualWidth, height: 20, tagList: _postList[index].tags),
                             // Title
                             SizedBox(
-                              height: 30,
-                              child: Text(
-                                _postList[index].title,
-                                style: const TextStyle(
-                                  color: globals.FocusedForeground,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold
+                              height: 40,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _postList[index].title,
+                                  style: const TextStyle(
+                                    color: globals.FocusedForeground,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold
+                                  )
                                 ),
                               )
                             ),
@@ -187,7 +188,7 @@ class _PostListPageState extends State<PostListPage> {
                                       height: 40,
                                       margin: const EdgeInsets.only(right: 10),
                                       decoration: BoxDecoration(
-                                        borderRadius: globals.ProfileImageRadius,
+                                        shape: BoxShape.circle,
                                         image: DecorationImage(image: AssetImage(_postList[index].image))
                                       ),
                                     )

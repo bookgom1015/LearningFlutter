@@ -13,7 +13,6 @@ const Color FocusedForeground = Colors.white;
 const Color UnfocusedForeground = Colors.white54;
 
 BorderRadius DefaultRadius = BorderRadius.circular(10);
-BorderRadius ProfileImageRadius = const BorderRadius.all(Radius.circular(20));
 
 const double BottomNavBarHeight = 52;
 const double MaxTabBoxSize = 48;
