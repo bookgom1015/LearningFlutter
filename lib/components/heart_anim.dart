@@ -65,6 +65,12 @@ class _HeartAnimState extends State<HeartAnim> with SingleTickerProviderStateMix
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,

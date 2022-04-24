@@ -77,6 +77,13 @@ class _PostListPageState extends State<PostListPage> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _searchBarFocusNode.dispose();
+    _searchBarController.dispose();
+  }
+
   // ignore: non_constant_identifier_names
   void SearchBarLostedFocus() {
     _searchBarFocusNode.unfocus();

@@ -85,102 +85,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
                   ),
                   SizedBox(
                     height: _shrinkeddHeight + _heightAnimation.value * (extendedHeight - _shrinkeddHeight),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: globals.IdentityColorDarker20,
-                        boxShadow: [
-                          BoxShadow(
-                            color: globals.ShadowColor,
-                            spreadRadius: 1,
-                            blurRadius: 8,
-                            offset: Offset(0, 0)
-                          )
-                        ]
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(
-                                  color: globals.IdentityColorDarker20,                                  
-                                ),
-                                width: deviceWidth,
-                                height: 50,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      isExtended = !isExtended;
-                                      if (isExtended) {
-                                        _controller.forward();
-                                      }
-                                      else {
-                                        _controller.reverse();
-                                      }
-                                    });
-                                  },
-                                  child: Icon(
-                                    isExtended ? Icons.arrow_drop_down : Icons.arrow_drop_up,
-                                    color: globals.FocusedForeground,
-                                  )
-                                ),
-                              )
-                            ],
-                          ),
-                          Expanded(
-                            child:  ListView.builder(
-                              itemCount: _replies.length,
-                              itemBuilder: (_, index) {
-                                return Container(
-                                  margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                  child: Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              borderRadius: const BorderRadius.all(Radius.circular(20)),
-                                              image: DecorationImage(
-                                                image: AssetImage(_replies[index].image),
-                                              )
-                                            )
-                                          ),
-                                          Text(
-                                            _replies[index].name,
-                                            style: const TextStyle(
-                                              color: globals.FocusedForeground
-                                            )
-                                          )
-                                        ],
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Container(
-                                          padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),
-                                          decoration: BoxDecoration(
-                                            color: globals.IdentityColorLighter30,
-                                            borderRadius: globals.DefaultRadius                                    
-                                          ),
-                                          child: Text(
-                                            _replies[index].text,
-                                            style: const TextStyle(
-                                              color: globals.FocusedForeground
-                                            ),
-                                          ),
-                                        )
-                                      )
-                                    ],
-                                  ),
-                                );
-                              }
-                            )
-                          )
-                        ],
-                      ),
-                    ),
+                    child: repliesPartial(deviceWidth)
                   )
                 ]
               )
@@ -248,6 +153,105 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
             )
           ],                  
         )
+      ),
+    );
+  }
+
+  Widget repliesPartial(double width) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: globals.IdentityColorDarker20,
+        boxShadow: [
+          BoxShadow(
+            color: globals.ShadowColor,
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: Offset(0, 0)
+          )
+        ]
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  color: globals.IdentityColorDarker20,                                  
+                ),
+                width: width,
+                height: 50,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isExtended = !isExtended;
+                      if (isExtended) {
+                        _controller.forward();
+                      }
+                      else {
+                        _controller.reverse();
+                      }
+                    });
+                  },
+                  child: Icon(
+                    isExtended ? Icons.arrow_drop_down : Icons.arrow_drop_up,
+                    color: globals.FocusedForeground,
+                  )
+                ),
+              )
+            ],
+          ),
+          Expanded(
+            child:  ListView.builder(
+              itemCount: _replies.length,
+              itemBuilder: (_, index) {
+                return Container(
+                  margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(Radius.circular(20)),
+                              image: DecorationImage(
+                                image: AssetImage(_replies[index].image),
+                              )
+                            )
+                          ),
+                          Text(
+                            _replies[index].name,
+                            style: const TextStyle(
+                              color: globals.FocusedForeground
+                            )
+                          )
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),
+                          decoration: BoxDecoration(
+                            color: globals.IdentityColorLighter30,
+                            borderRadius: globals.DefaultRadius                                    
+                          ),
+                          child: Text(
+                            _replies[index].text,
+                            style: const TextStyle(
+                              color: globals.FocusedForeground
+                            ),
+                          ),
+                        )
+                      )
+                    ],
+                  ),
+                );
+              }
+            )
+          )
+        ],
       ),
     );
   }

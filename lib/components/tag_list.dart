@@ -21,7 +21,7 @@ class TagList extends StatelessWidget {
   Widget build(BuildContext context) {
     const double margin = 5;
     const double padding = 10;
-    double doublePadding = padding + padding;
+    double extraSpace = margin + padding + padding;
     double accum = 0;
 
     var textStyle = const TextStyle(
@@ -41,16 +41,16 @@ class TagList extends StatelessWidget {
             itemCount: tagList.length,
             itemBuilder: (_, tagIndex) {
               String tagText = tagList[tagIndex];
-              double textWidth = calcTextSize(tagText, textStyle).width + doublePadding + margin;
+              double textWidth = calcTextSize(tagText, textStyle).width + extraSpace;
 
               if ((accum + textWidth) > width) {
                 return const SizedBox(width: 0, height: 0);
               }
               accum += textWidth;
 
-              if (tagIndex + 2 < tagList.length) {
+              if ((tagIndex + 2) < tagList.length) {
                 String nextTagText = tagList[tagIndex + 1];
-                double NextTextWidth = calcTextSize(nextTagText, textStyle).width + doublePadding + margin;
+                double NextTextWidth = calcTextSize(nextTagText, textStyle).width + extraSpace;
 
                 if ((accum + NextTextWidth) > width) {
                   tagText = "...";
