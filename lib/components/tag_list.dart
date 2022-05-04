@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import 'package:flutter_application_learning/globals.dart' as globals;
 
 class TagList extends StatelessWidget {

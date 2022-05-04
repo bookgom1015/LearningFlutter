@@ -3,14 +3,14 @@ import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/reply.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
-class DetailPostPage extends StatefulWidget {
-  const DetailPostPage({Key? key}) : super(key: key);
+class PostDetailsPage extends StatefulWidget {
+  const PostDetailsPage({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _DetailPostPageState();
+  State<StatefulWidget> createState() => _PostDetailsPageState();
 }
 
-class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProviderStateMixin {
+class _PostDetailsPageState extends State<PostDetailsPage> with SingleTickerProviderStateMixin {
   Map _receivedData = {};
 
   final List<Reply> _replies = [
@@ -36,7 +36,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
   void initState() {
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: globals.AnimDuration)
+      duration: const Duration(milliseconds: globals.ShorterAnimDuration)
     );
 
     _curveAnimation = CurvedAnimation(
@@ -63,10 +63,14 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
 
     double deviceWidth = MediaQuery.of(context).size.width;
     double extendedHeight = MediaQuery.of(context).size.height * 0.5;
+    
+    double viewHeight = MediaQuery.of(context).size.height - 
+      MediaQuery.of(context).padding.top - // Status bar height
+      AppBar().preferredSize.height - _shrinkeddHeight;
 
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(_receivedData["title"]),
+        appBar: createAppBar(navTitle: _receivedData["title"]),
         body: AnimatedBuilder(
           animation: _controller,
           builder: (BuildContext context, _) { 
@@ -77,10 +81,8 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
               child: Column(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      child: SingleChildScrollView(
-                        child: ContentPartial()
-                      )
+                    child: SingleChildScrollView(
+                      child: ContentPartial(viewHeight)
                     )
                   ),
                   SizedBox(
@@ -97,9 +99,12 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
   }
 
   // ignore: non_constant_identifier_names
-  Widget ContentPartial() {
+  Widget ContentPartial(double viewHeight) {      
     return Container(
       margin: const EdgeInsets.all(10),
+      constraints: BoxConstraints(
+        minHeight: viewHeight - 20 // to exclude margin
+      ),
       decoration: BoxDecoration(
         color: globals.IdentityColor,
         borderRadius: globals.DefaultRadius
@@ -112,7 +117,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
             Row(
               children: [
                 Hero(
-                  tag: _receivedData['index'].toString(),
+                  tag: "post_" + _receivedData['index'].toString(),
                   child: Container(
                     width: 40,
                     height: 40,
@@ -135,7 +140,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
             Column(
               children: [
                 Container(
-                  height: 600,
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                   decoration: BoxDecoration(
                     color: globals.IdentityColorLighter50,
                     borderRadius: globals.DefaultRadius
@@ -180,7 +185,7 @@ class _DetailPostPageState extends State<DetailPostPage> with SingleTickerProvid
                   color: globals.IdentityColorDarker20,                                  
                 ),
                 width: width,
-                height: 50,
+                height: _shrinkeddHeight,
                 child: GestureDetector(
                   onTap: () {
                     setState(() {

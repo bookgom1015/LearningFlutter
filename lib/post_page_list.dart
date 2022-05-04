@@ -113,19 +113,9 @@ class _PostListPageState extends State<PostListPage> {
             ),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 80),
+                padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
                 itemCount: _postList.length,
                 itemBuilder: (_, index) {
-                  var tags = StringBuffer();
-                  for (var tag in _postList[index].tags) {
-                    tags.write(tag);
-                    tags.write(",  ");
-                  }
-                  String tagsStr = tags.toString();
-                  tags.clear();
-                  tags.write("[  ");
-                  tags.write(tagsStr.substring(0, tagsStr.lastIndexOf(',')));
-                  tags.write("  ]");
                   return GestureDetector(
                     onTap: () {
                       if(_searchBarFocusNode.hasFocus) {
@@ -189,7 +179,7 @@ class _PostListPageState extends State<PostListPage> {
                               child: Row(
                                 children: [
                                   Hero(
-                                    tag: index.toString(),
+                                    tag: "post_" + index.toString(),
                                     child: Container(
                                       width: 40,
                                       height: 40,

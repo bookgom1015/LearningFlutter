@@ -29,7 +29,7 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
   void initState() {
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: globals.AnimDuration)
+      duration: const Duration(milliseconds: globals.BasicAnimDuration)
     );
 
     _circleColorAnimation = ColorTween(
@@ -77,17 +77,7 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
     ];
 
     return AnimatedContainer(
-      margin: EdgeInsets.only(
-        left: widget.model.animateMargin(widget.index),
-        right: widget.model.animateMargin(widget.index),
-      ),
-      duration: const Duration(milliseconds: globals.AnimDuration),
-      transform: Matrix4.translation(
-        math.Vector3(
-          widget.model.translateX(widget.index),
-          0,
-          0)
-      ),
+      duration: const Duration(milliseconds: globals.BasicAnimDuration),
       child: SizedBox(
         width: globals.MaxTabBoxSize,
         height: globals.MaxTabBoxSize,
@@ -96,14 +86,21 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
             Center(
               child: AnimatedBuilder(
                 animation: _controller,
-                builder: (BuildContext context, _) {
+                builder: (BuildContext context, _) {                  
                   double tabBoxSize = (globals.MinTabBoxSize + (globals.MaxTabBoxSize - globals.MinTabBoxSize) * _sizeAnimation.value);
                   return Container(
                     width: tabBoxSize,
                     height: tabBoxSize,
-                    decoration: BoxDecoration(
+                    decoration: BoxDecoration(                      
                       color: _circleColorAnimation.value,
-                      shape: BoxShape.circle
+                      shape: BoxShape.circle,
+                      boxShadow: const [          
+                        BoxShadow(
+                          color: globals.ShadowColor,
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                        )
+                      ]
                     ),
                   );
                 },

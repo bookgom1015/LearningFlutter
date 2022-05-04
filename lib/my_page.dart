@@ -37,7 +37,7 @@ class _MyPageState extends State<MyPage> {
       body: Container(               
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 0), 
         child: ListView.builder(
-          padding: const EdgeInsets.only(bottom: 80),
+          padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
           itemCount: _menuList.length,
           itemBuilder: (context, index) {
             return Container(

@@ -24,7 +24,7 @@ class _TitleFadeInAnimState extends State<TitleFadeInAnim> with SingleTickerProv
   void initState() {
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: globals.AnimDuration)
+      duration: const Duration(milliseconds: globals.BasicAnimDuration)
     );
 
     _curveAnimation = CurvedAnimation(

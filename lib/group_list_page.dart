@@ -84,7 +84,7 @@ class _GroupListPageState extends State<GroupListPage> {
             ),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 80),
+                padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
                 itemCount: _groups.length,
                 itemBuilder: (_, index) {
                   return GestureDetector(
@@ -94,7 +94,12 @@ class _GroupListPageState extends State<GroupListPage> {
                       }
                       Navigator.pushNamed(
                         widget.context, "/detail_group",
-                        arguments: { "index": index, "image": _groups[index].image }
+                        arguments: { 
+                          "index": index,
+                          "title": _groups[index].title,
+                          "host": _groups[index].host,
+                          "image": _groups[index].image
+                        }
                       );
                     },
                     child: Container(
@@ -127,7 +132,8 @@ class _GroupListPageState extends State<GroupListPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Hero(tag: index.toString(), 
+        Hero(
+          tag: "group_post_" + index.toString(), 
           child: Container(
             width: size,
             height: size,
