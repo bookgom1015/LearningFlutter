@@ -7,12 +7,14 @@ class TabButtonAnim extends StatefulWidget {
   final TabButtonModel model;
   final int index;
   final Function callback;
+  final List<IconData> icons;
 
   const TabButtonAnim({
     Key? key, 
     required this.model,
     required this.index,
-    required this.callback
+    required this.callback,
+    required this.icons
   }) : super(key: key);
 
   @override
@@ -70,12 +72,6 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    const List<IconData> iconList = [
-      Icons.comment_bank,
-      Icons.list,
-      Icons.manage_accounts
-    ];
-
     return AnimatedContainer(
       duration: const Duration(milliseconds: globals.BasicAnimDuration),
       child: SizedBox(
@@ -115,7 +111,7 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
                       widget.callback();
                     },
                     child: Icon(
-                      iconList[widget.index],
+                      widget.icons[widget.index],
                       size: (globals.MinTabIconSize + (globals.MaxTabIconSize - globals.MinTabIconSize) * _sizeAnimation.value),
                       color: widget.model.animateColor(
                         widget.index,

@@ -3,14 +3,14 @@ import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/reply.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
-class PostDetailsPage extends StatefulWidget {
-  const PostDetailsPage({Key? key}) : super(key: key);
+class PostPage extends StatefulWidget {
+  const PostPage({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _PostDetailsPageState();
+  State<StatefulWidget> createState() => _PostPageState();
 }
 
-class _PostDetailsPageState extends State<PostDetailsPage> with SingleTickerProviderStateMixin {
+class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin {
   Map _receivedData = {};
 
   final List<Reply> _replies = [

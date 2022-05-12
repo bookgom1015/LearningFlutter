@@ -74,7 +74,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     return MaterialApp(
       home: Scaffold(        
         appBar: createAppBar(
-          navTitle: "공개 글쓰기",
+          navTitle: "글쓰기",
           btnSize: 32,
           btnList: [
             AppBarBtn(

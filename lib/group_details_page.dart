@@ -15,7 +15,7 @@ class GroupDetailsPage extends StatefulWidget {
 class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerProviderStateMixin {
   Map _receivedData = {};
 
-  final double _maxHeight = 200;
+  final double _maxHeight = 240;
   final double _triggerVelocity = 250000; // Squared
   late double _middleHeight;
   late double _currHeight;
@@ -69,6 +69,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       MediaQuery.of(context).padding.top - // Status bar height
       AppBar().preferredSize.height;
 
+    bool isPrivate = _receivedData["isPrivate"];
+
     return MaterialApp(
       home: Scaffold(
         appBar: createAppBar(navTitle: _receivedData['title']),
@@ -76,173 +78,303 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           decoration: const BoxDecoration(
             color: globals.BackgroundColor
           ),
-          child: SingleChildScrollView(
-            child: SizedBox(
-              height: deviceHeight,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (BuildContext context, _) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        width: deviceWidth,
-                        height: _currHeight,
-                        child: FittedBox(
-                          fit: BoxFit.none,
-                          clipBehavior: Clip.hardEdge,
-                          child: descBox(deviceWidth, 200)
-                        )
-                      ),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            GestureDetector(
-                              onVerticalDragStart: (details) {
-                                _prevY = details.globalPosition.dy;
-                                _refHeight = _currHeight;
-                              },
-                              onVerticalDragUpdate: (details) {
-                                double _deltaY = _prevY - details.globalPosition.dy;
-                                setState(() {
-                                  _currHeight = math.min(math.max(_refHeight - _deltaY, 0), _maxHeight);
-                                });
-                              },
-                              onVerticalDragEnd: (details) {
-                                _refHeight = _currHeight;
-                                var dy = details.velocity.pixelsPerSecond.dy;
-                                if (dy * dy > _triggerVelocity) {
-                                  if (dy > 0) {
-                                    _targetHeight = _maxHeight;
-                                  }
-                                  else {
-                                    _targetHeight = 0;
-                                  }
-                                }
-                                else {
-                                  if (_currHeight > _middleHeight) {
-                                    _targetHeight = _maxHeight;
-                                  }
-                                  else {
-                                    _targetHeight = 0;
-                                  }
-                                }
-                                _controller.reset();
-                                _controller.forward();
-                              }, 
-                              child: Container(
-                                height: 40,
-                                decoration: const BoxDecoration(
-                                  color: globals.IdentityColorLighter30
-                                ),
-                              )
-                            ),
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: globals.IdentityColor,
-                                  borderRadius: globals.DefaultRadius
-                                ),
-                              )
-                            )
-                          ],
-                        )
-                      )
-                    ],
-                  );
-                }
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                child: SizedBox(
+                  height: deviceHeight,
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (BuildContext context, _) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          descBox(
+                            width: deviceWidth, 
+                            height: _maxHeight
+                          ),
+                          const SizedBox(height: 10),
+                          gestureBar(
+                            height: 40
+                          ),
+                          postList(
+                            isPrivate: isPrivate
+                          )
+                        ],
+                      );
+                    }
+                  )
+                )
+              ),
+              addPostBtn(
+                isPrivate: isPrivate, 
+                bottom: 30, 
+                right: 30,
+                size: 64,
+                iconSize: 50
               )
-            )
+            ]
           )
         )
       )
     );
   }
 
-  Widget descBox(double width, double height) {
+  Widget descBox({
+      required double width,
+      required double height}) {
     return SizedBox(
       width: width,
-      height: height,
-      child: Row(
+      height: _currHeight,
+      child: FittedBox(
+        fit: BoxFit.none,
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          children: [
+            SizedBox(
+              width: width,
+              height: height - 40,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: globals.IdentityColor,
+                        borderRadius: globals.DefaultRadius
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Hero(
+                                tag: (_receivedData["isPrivate"] ? "private_" : "public_") + _receivedData['index'].toString(),
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      image: AssetImage(_receivedData['image']),
+                                    )                              
+                                  )
+                                )
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                _receivedData['host'],
+                                style: const TextStyle(
+                                  color: globals.FocusedForeground,
+                                  fontSize: 16
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Text(
+                                _receivedData["desc"],
+                                maxLines: null,
+                                style: const TextStyle(
+                                  color: globals.FocusedForeground,
+                                )
+                              )
+                            )
+                          )
+                        ],
+                      ),
+                    )
+                  ),
+                  Container(
+                    width: 60,
+                    margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    decoration: BoxDecoration(
+                      color: globals.IdentityColor,
+                      borderRadius: globals.DefaultRadius
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          height: 45,
+                          child: IconButton(
+                            onPressed: () {}, 
+                            icon: const Icon(Icons.add_reaction),
+                            color: globals.UnfocusedForeground,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 45,
+                          child: StarAnim(beginSize: 24, endSize: 32),
+                        ),
+                        const SizedBox(
+                          height: 45,
+                          child: HeartAnim(beginSize: 24, endSize: 32)
+                        ),
+                        SizedBox(
+                          height: 45,
+                          child: IconButton(
+                            onPressed: () {}, 
+                            icon: const Icon(Icons.report),
+                            color: globals.FocusedDangerForeground,
+                          ),
+                        )
+                      ]
+                    ),
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(              
+              width: width,
+              height: 30,
+              child: Container(
+                margin: const EdgeInsets.only(left: 10, right: 10),
+                decoration: BoxDecoration(
+                  color: globals.IdentityColor,
+                  borderRadius: globals.DefaultRadius
+                ),
+              )
+            )
+          ]
+        )
+      )
+    );
+  }
+
+  Widget gestureBar({
+      required double height}) {
+    return GestureDetector(
+      onVerticalDragStart: (details) {
+        _prevY = details.globalPosition.dy;
+        _refHeight = _currHeight;
+      },
+      onVerticalDragUpdate: (details) {
+        double _deltaY = _prevY - details.globalPosition.dy;
+        setState(() {
+          _currHeight = math.min(math.max(_refHeight - _deltaY, 0), _maxHeight);
+        });
+      },
+      onVerticalDragEnd: (details) {
+        _refHeight = _currHeight;
+        var dy = details.velocity.pixelsPerSecond.dy;
+        if (dy * dy > _triggerVelocity) {
+          if (dy > 0) {
+            _targetHeight = _maxHeight;
+          }
+          else {
+            _targetHeight = 0;
+          }
+        }
+        else {
+          if (_currHeight > _middleHeight) {
+            _targetHeight = _maxHeight;
+          }
+          else {
+            _targetHeight = 0;
+          }
+        }
+        _controller.reset();
+        _controller.forward();
+      }, 
+      child: Container(
+        height: height,
+        decoration: const BoxDecoration(
+          color: globals.IdentityColorLighter30
+        ),
+      )
+    );
+  }
+
+  Widget postList({
+      required bool isPrivate}) {
+    return Expanded(
+      child: Column(
         children: [
           Expanded(
             child: Container(
-              margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
+              margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,
                 borderRadius: globals.DefaultRadius
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Hero(
-                        tag: "group_post_" + _receivedData['index'].toString(),
-                        child: Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: AssetImage(_receivedData['image']),
-                            )                              
-                          )
-                        )
+                      Icon(
+                        Icons.lock_sharp,
+                        color: globals.FocusedForeground,
+                        size: isPrivate ? 64 : 0,
                       ),
                       Text(
-                        _receivedData['host'],
-                        style: const TextStyle(
-                          color: globals.FocusedForeground
-                        ),
+                        "똥닌겐 따위에게 권한은 없는데스우",
+                        style: TextStyle(
+                          color: globals.FocusedForeground,
+                          fontSize: isPrivate ? 18 : 0
+                        )
                       )
                     ],
                   )
-                ],
-              ),
+                ]
+              )
             )
-          ),
-          Container(
-            width: 60,
-            margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            decoration: BoxDecoration(
-              color: globals.IdentityColor,
-              borderRadius: globals.DefaultRadius
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  height: 45,
-                  child: IconButton(
-                    onPressed: () {}, 
-                    icon: const Icon(Icons.call),
-                    color: globals.FocusedForeground,
-                  ),
-                ),
-                SizedBox(
-                  height: 45,
-                  child: IconButton(
-                    onPressed: () {}, 
-                    icon: const Icon(Icons.message),
-                    color: globals.FocusedForeground,
-                  ),
-                ),
-                const SizedBox(
-                  height: 45,
-                  child: StarAnim(beginSize: 24, endSize: 32),
-                ),
-                const SizedBox(
-                  height: 45,
-                  child: HeartAnim(beginSize: 24, endSize: 32)
-                ),
-              ]
-            ),
           )
         ],
-      ),
+      )
+    );
+  }
+
+  Widget addPostBtn({
+      required bool isPrivate,
+      required double bottom,
+      required double right,
+      required double size,
+      required double iconSize}) {
+    return Positioned(
+      bottom: bottom,
+      right: right,
+      child: GestureDetector(
+        onTap: () {
+          if (isPrivate) return;          
+          Navigator.pushNamed(
+            context, "/write_post", 
+            arguments: {
+              "isPrivate": isPrivate,
+              "user": _receivedData["user"]                    
+            }
+          );
+        },
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: globals.IdentityColorLighter30,
+            boxShadow: [          
+              BoxShadow(
+                color: globals.ShadowColor,
+                spreadRadius: 4,
+                blurRadius: 8,
+              )
+            ]
+          ),
+          child: Transform.rotate(
+            angle: isPrivate ? (45 * globals.DegToRad) : 0,
+            child: Icon(
+              Icons.add,
+              color: isPrivate ? globals.UnfocusedForeground : globals.FocusedForeground,
+              size: iconSize
+            )
+          )
+        )
+      )
     );
   }
 }

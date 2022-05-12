@@ -42,15 +42,15 @@ class TagList extends StatelessWidget {
               String tagText = tagList[tagIndex];
               double textWidth = calcTextSize(tagText, textStyle).width + extraSpace;
 
-              if ((accum + textWidth) > width) {
+              accum += textWidth;
+              if (accum > width) {
                 return const SizedBox(width: 0, height: 0);
               }
-              accum += textWidth;
 
-              if ((tagIndex + 2) < tagList.length) {
+              if ((tagIndex + 1) < tagList.length) {
                 String nextTagText = tagList[tagIndex + 1];
+                // ignore: non_constant_identifier_names
                 double NextTextWidth = calcTextSize(nextTagText, textStyle).width + extraSpace;
-
                 if ((accum + NextTextWidth) > width) {
                   tagText = "...";
                 }
