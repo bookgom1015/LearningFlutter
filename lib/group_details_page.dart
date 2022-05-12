@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
+import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
 import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/group.dart';
@@ -166,7 +167,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                           gestureBar(
                             height: 40
                           ),
-                          postList(tagWidth: deviceWidth)
+                          postList(
+                            width: deviceWidth,
+                            height: 180
+                          )
                         ],
                       );
                     }
@@ -359,7 +363,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget postList({required double tagWidth}) {
+  Widget postList({
+      required double width,
+      required double height}) {
     Widget lockWidget = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -383,88 +389,30 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       ]
     );
 
+    const double margin = 10;
+    final double actualWidth = width - margin - margin;
+
     return Expanded(
       child: Column(
         children: [
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: globals.IdentityColor,
-                borderRadius: globals.DefaultRadius
-              ),
               child: _blocked ?
               lockWidget :
-              ListView.builder(
-                itemCount: _postList.length,
-                itemBuilder: (_, index) {
-                  return Container(
-                    height: 180,
-                    margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: globals.IdentityColorDarker20,
-                      borderRadius: globals.DefaultRadius
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 30,
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          child: TagList(
-                            tagList: _postList[index].tags,
-                            width: tagWidth - 60,
-                            height: 20
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: tagWidth - 60,
-                                child: Text(
-                                  _postList[index].desc,
-                                  maxLines: 3,
-                                  style: const TextStyle(
-                                    color: globals.FocusedForeground,
-                                    overflow: TextOverflow.ellipsis
-                                  ),
-                                )
-                              )
-                            ],
-                          )
-                        ),
-                        SizedBox(
-                          height: 40,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    image: AssetImage(_group.filePath),
-                                  )                              
-                                )
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                _postList[index].title,
-                                style: const TextStyle(
-                                  color: globals.FocusedForeground,
-                                  fontWeight: FontWeight.bold
-                                )
-                              )
-                            ],
-                          )
-                        )
-                      ],
-                    )
-                  );
-                }
+              createPostListView(
+                posts: _postList, 
+                onTab: () {}, 
+                height: height, 
+                titleHeight: 40, 
+                imageSize: 40, 
+                tagsWidth: actualWidth, 
+                tagsHeight: 20,
+                maxLines: 3,
+                margin: 5,
+                padding: 10,
+                bottomPadding: 90,
+                titleFontSize: 18
               )
             )
           )
