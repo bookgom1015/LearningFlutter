@@ -1,9 +1,18 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
+import 'package:flutter_application_learning/components/tag_list.dart';
+import 'package:flutter_application_learning/entries/group.dart';
+import 'package:flutter_application_learning/entries/post.dart';
+import 'package:flutter_application_learning/entries/subscriptions.dart';
+import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 import 'dart:math' as math;
+import 'package:http/http.dart' as http;
+
+import 'package:http/http.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   const GroupDetailsPage({Key? key}) : super(key: key);
@@ -26,6 +35,15 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   late AnimationController _controller;
   late Animation<double> _curveAnimation;
   late Animation<double> _animation;
+
+  late User _user;
+  late Subscriptions _subs;
+  late Group _group;
+
+  bool _blocked = true;
+  bool _unqualified = false;
+
+  List<Post> _postList = [];
 
   @override
   void initState() {
@@ -52,7 +70,61 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         _currHeight = _refHeight + (_targetHeight - _refHeight) * _controller.value;
       });
     });
+
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+    _user = _receivedData["user"];
+    _subs = _receivedData["subs"];
+    _group = _receivedData["group"];
+
+    bool isMatched = false;
+    for (var group in _subs.groups) {
+      if (group.id == _group.id) {
+        isMatched = true;
+        break;
+      }
+    }
+
+    if (isMatched || !_group.type) {
+      _blocked = false; 
+    }
+
+    if (!_blocked && !isMatched) {
+      _unqualified = true;
+    }
+
+    if (!_blocked) {
+      StringBuffer uri = StringBuffer();
+      uri.write(globals.SpringUriPath);
+      uri.write("/api/team/");
+      uri.write(_group.id);
+      uri.write("/post");
+
+      var response = http.get(Uri.parse(uri.toString()));
+
+      response.then((value) {
+        if (value.statusCode != 200) {
+          print("error occured: " + value.statusCode.toString());
+        }
+        else {
+          dynamic posts = jsonDecode(value.body);
+          
+          List<Post> list = [];
+          for (var post in posts) {
+            setState(() {
+              list.add(Post.fromJson(post));
+            });
+          }
+          _postList = list;
+        }
+      });
+    }
   }
 
   @override void dispose() {
@@ -62,18 +134,14 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-
     double deviceWidth = MediaQuery.of(context).size.width;
     double deviceHeight = MediaQuery.of(context).size.height - 
       MediaQuery.of(context).padding.top - // Status bar height
       AppBar().preferredSize.height;
-
-    bool isPrivate = _receivedData["isPrivate"];
-
+    
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(navTitle: _receivedData['title']),
+        appBar: createAppBar(navTitle: _group.name),
         body: Container(
           decoration: const BoxDecoration(
             color: globals.BackgroundColor
@@ -91,15 +159,14 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                         children: [
                           descBox(
                             width: deviceWidth, 
-                            height: _maxHeight
+                            height: _maxHeight,
+                            tag: "group_" + _receivedData['index'].toString()
                           ),
                           const SizedBox(height: 10),
                           gestureBar(
                             height: 40
                           ),
-                          postList(
-                            isPrivate: isPrivate
-                          )
+                          postList(tagWidth: deviceWidth)
                         ],
                       );
                     }
@@ -107,7 +174,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                 )
               ),
               addPostBtn(
-                isPrivate: isPrivate, 
                 bottom: 30, 
                 right: 30,
                 size: 64,
@@ -122,7 +188,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   Widget descBox({
       required double width,
-      required double height}) {
+      required double height,
+      required String tag}) {
     return SizedBox(
       width: width,
       height: _currHeight,
@@ -150,21 +217,21 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                           Row(
                             children: [
                               Hero(
-                                tag: (_receivedData["isPrivate"] ? "private_" : "public_") + _receivedData['index'].toString(),
+                                tag: tag,
                                 child: Container(
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
-                                      image: AssetImage(_receivedData['image']),
+                                      image: AssetImage(_group.filePath),
                                     )                              
                                   )
                                 )
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                _receivedData['host'],
+                                _group.hostId.toString(),
                                 style: const TextStyle(
                                   color: globals.FocusedForeground,
                                   fontSize: 16
@@ -176,7 +243,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                           Expanded(
                             child: SingleChildScrollView(
                               child: Text(
-                                _receivedData["desc"],
+                                _group.desc,
                                 maxLines: null,
                                 style: const TextStyle(
                                   color: globals.FocusedForeground,
@@ -233,11 +300,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
               width: width,
               height: 30,
               child: Container(
-                margin: const EdgeInsets.only(left: 10, right: 10),
+                margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
                 decoration: BoxDecoration(
                   color: globals.IdentityColor,
                   borderRadius: globals.DefaultRadius
                 ),
+                child: TagList(tagList: _group.tags, width: width - 20, height: 20),
               )
             )
           ]
@@ -290,8 +359,30 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget postList({
-      required bool isPrivate}) {
+  Widget postList({required double tagWidth}) {
+    Widget lockWidget = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.lock_sharp,
+              color: globals.FocusedForeground,
+              size: _group.type ? 64 : 0,
+            ),
+            Text(
+              "똥닌겐 따위에게 권한은 없는데스우",
+              style: TextStyle(
+                color: globals.FocusedForeground,
+                fontSize: _group.type ? 18 : 0
+              )
+            )
+          ],
+        )
+      ]
+    );
+
     return Expanded(
       child: Column(
         children: [
@@ -302,27 +393,78 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                 color: globals.IdentityColor,
                 borderRadius: globals.DefaultRadius
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.lock_sharp,
-                        color: globals.FocusedForeground,
-                        size: isPrivate ? 64 : 0,
-                      ),
-                      Text(
-                        "똥닌겐 따위에게 권한은 없는데스우",
-                        style: TextStyle(
-                          color: globals.FocusedForeground,
-                          fontSize: isPrivate ? 18 : 0
+              child: _blocked ?
+              lockWidget :
+              ListView.builder(
+                itemCount: _postList.length,
+                itemBuilder: (_, index) {
+                  return Container(
+                    height: 180,
+                    margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: globals.IdentityColorDarker20,
+                      borderRadius: globals.DefaultRadius
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 30,
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                          child: TagList(
+                            tagList: _postList[index].tags,
+                            width: tagWidth - 60,
+                            height: 20
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: tagWidth - 60,
+                                child: Text(
+                                  _postList[index].desc,
+                                  maxLines: 3,
+                                  style: const TextStyle(
+                                    color: globals.FocusedForeground,
+                                    overflow: TextOverflow.ellipsis
+                                  ),
+                                )
+                              )
+                            ],
+                          )
+                        ),
+                        SizedBox(
+                          height: 40,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: AssetImage(_group.filePath),
+                                  )                              
+                                )
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                _postList[index].title,
+                                style: const TextStyle(
+                                  color: globals.FocusedForeground,
+                                  fontWeight: FontWeight.bold
+                                )
+                              )
+                            ],
+                          )
                         )
-                      )
-                    ],
-                  )
-                ]
+                      ],
+                    )
+                  );
+                }
               )
             )
           )
@@ -332,7 +474,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   }
 
   Widget addPostBtn({
-      required bool isPrivate,
       required double bottom,
       required double right,
       required double size,
@@ -342,12 +483,45 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       right: right,
       child: GestureDetector(
         onTap: () {
-          if (isPrivate) return;          
+          if (_blocked) return;          
+          if (_unqualified) {
+            showDialog(context: context, builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text(
+                  "알림",
+                  style: TextStyle(
+                    color: globals.FocusedForeground
+                  )
+                ),
+                content: const Text(
+                  "팀에 소속되어 있지 않습니다. \n글을 작성하시려면 먼저 팀에 가입해주세요.",
+                  softWrap: true,
+                  style: TextStyle(
+                    color: globals.FocusedForeground
+                  )
+                ),
+                backgroundColor: globals.IdentityColor,
+                elevation: 24,
+                shape: RoundedRectangleBorder(
+                  borderRadius: globals.DefaultRadius
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("OK"),
+                  ),
+                ],
+              );
+            });
+            return;
+          }
           Navigator.pushNamed(
             context, "/write_post", 
             arguments: {
-              "isPrivate": isPrivate,
-              "user": _receivedData["user"]                    
+              "user": _user,
+              "group": _group
             }
           );
         },
@@ -366,10 +540,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             ]
           ),
           child: Transform.rotate(
-            angle: isPrivate ? (45 * globals.DegToRad) : 0,
+            angle: _blocked ? (45 * globals.DegToRad) : 0,
             child: Icon(
               Icons.add,
-              color: isPrivate ? globals.UnfocusedForeground : globals.FocusedForeground,
+              color: _blocked ? globals.UnfocusedForeground : globals.FocusedForeground,
               size: iconSize
             )
           )

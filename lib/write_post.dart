@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
+import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 import 'dart:math' as math;
+import 'package:http/http.dart' as http;
 
 class WritePostPage extends StatefulWidget {
   const WritePostPage({Key? key}) : super(key: key);
@@ -32,9 +35,39 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
   late Animation<double> _curveAnimation;
   late Animation<double> _animation;
 
+  late User _user;
+  late Group _group;
+
+  late BuildContext _context;
+
   void send() {
-    User user = _receivedData["user"];
-    print(user.key);
+    StringBuffer uri = StringBuffer();
+    uri.write(globals.SpringUriPath);
+    uri.write("/api/team/");
+    uri.write(_group.id);
+    uri.write("/post");
+
+    String spaceless = _tags.replaceAll(" ", "");
+    var tags = spaceless.split(",");
+
+    var response = http.post(
+      Uri.parse(uri.toString()),
+      headers: { "Content-Type": "application/json", "Authorization" : _user.token },
+      body: jsonEncode({
+        "title": _title,
+        "description": _desc,
+        "tags": tags,
+      })
+    );
+
+    response.then((value) {
+      if (value.statusCode != 200) {
+        print("error occured: " + value.statusCode.toString());
+      }
+      else {
+        Navigator.pop(_context);
+      }
+    });
   }
 
   @override
@@ -67,7 +100,12 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    _context = context;
+
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+
+    _user = _receivedData["user"];
+    _group = _receivedData["group"];
     
     double deviceWidth = MediaQuery.of(context).size.width;
 

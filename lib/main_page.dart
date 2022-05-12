@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/nav_bar_clipper.dart';
 import 'package:flutter_application_learning/components/title_anim.dart';
 import 'package:flutter_application_learning/components/tab_btn_anim.dart';
+import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_application_learning/group_list_page.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_learning/post_list_page.dart';
 import 'package:flutter_application_learning/my_page.dart';
 import 'package:flutter_application_learning/entries/tab_btn_model.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
@@ -21,7 +23,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   
   late PageController _pageController;
 
-  final List<String> _titleList = ["Public", "Private", "My"];
+  final List<String> _titleList = ["공개글 목록", "팀 목록", "마이페이지"];
   late String _title;
 
   late AnimationController _controller;
@@ -30,8 +32,8 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   late Animation _colorAnimation;
 
   final List<IconData> _icons = [
-    Icons.lock_open,
-    Icons.lock,
+    Icons.list,
+    Icons.group,
     Icons.manage_accounts
   ];
 
@@ -59,6 +61,8 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       begin: globals.FocusedForeground,
       end: globals.UnfocusedForeground
     ).animate(_curveAnimation);
+
+    _controller.forward();
     super.initState();
   }
 
@@ -74,10 +78,11 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
 
     User user = _receivedData["user"];
+    Subscriptions subs = _receivedData["subs"];
 
     final List<Widget> pageList = [
-      GroupListPage(isPrivate: false, user: user, context: context, pageController: _pageController), 
-      GroupListPage(isPrivate: true, user: user, context: context, pageController: _pageController), 
+      PostListPage(user: user, subs: subs, context: context, pageController: _pageController), 
+      GroupListPage(user: user, subs: subs, context: context, pageController: _pageController), 
       const MyPage()
     ];
 
@@ -107,7 +112,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                         _title = _titleList[index];
                       });
                       model.updateIndex(index);
-                      if (index == 2) {
+                      if (index != 1) {
                         _controller.forward();
                       }
                       else {
@@ -175,7 +180,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                           if (model.index == index) {
                             return;
                           }
-                          if (index == 2) {
+                          if (index != 1) {
                             _controller.forward();
                           }
                           else {

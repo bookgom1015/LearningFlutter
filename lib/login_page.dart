@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_learning/components/nav_bar.dart';
@@ -274,8 +275,25 @@ class _LoginPageState extends State<LoginPage> {
       _storage.write(key: "user_pwd", value: _userPwd);
     }
 
-    User user = User(json["token"], json["id"], json["userName"], json["userNickname"]);
-    Navigator.pushReplacementNamed(context, '/main', arguments: {"user": user});
+    User user = User.fromJson(json);
+
+    uri.clear();
+    uri.write(globals.SpringUriPath);
+    uri.write("/api/user/");
+    uri.write(user.id);
+    uri.write("/subscription");
+
+    response = await http.get(Uri.parse(uri.toString()));
+
+    if (response.statusCode != 200) {
+      print("error occured");
+      return;
+    }
+
+    List<dynamic> subscriptions = jsonDecode(response.body);
+    var subs = Subscriptions.fromJson(subscriptions);
+
+    Navigator.pushReplacementNamed(context, '/main', arguments: {"user": user, "subs": subs});
   }
 
   // ignore: non_constant_identifier_names
