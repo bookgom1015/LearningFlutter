@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
+import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
@@ -46,6 +48,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   List<Post> _postList = [];
 
+  bool _loaded = false;
+
+  double _deviceWidth = 0;
+  double _deviceHeight = 0;
+
+  bool _collapsed = false;
+
   @override
   void initState() {
     _middleHeight = _maxHeight * 0.5;
@@ -69,16 +78,48 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     _animation.addListener(() {
       setState(() {
         _currHeight = _refHeight + (_targetHeight - _refHeight) * _controller.value;
+
+        if (_currHeight == 0) {
+          _collapsed = true;
+        }
+        else if (_currHeight == _maxHeight) {
+          _collapsed = false;
+        }
       });
     });
 
     super.initState();
   }
 
+  void getPostList() async {
+    StringBuffer uri = StringBuffer();
+      uri.write(globals.SpringUriPath);
+      uri.write("/api/team/");
+      uri.write(_group.id);
+      uri.write("/post");
+
+      var response = await http.get(Uri.parse(uri.toString()));
+
+      if (response.statusCode != 200) {
+        print("error occured: " + response.statusCode.toString());
+      }
+      else {
+        dynamic jsonArray = jsonDecode(response.body);
+        
+        List<Post> postList = [];
+        for (var json in jsonArray) {
+          postList.add(Post.fromJson(json));
+        }
+        
+        setState(() {
+          _postList = postList;
+          _loaded = true;
+        });
+      }
+  }
+
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
-
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
     _user = _receivedData["user"];
     _subs = _receivedData["subs"];
@@ -100,32 +141,12 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       _unqualified = true;
     }
 
-    if (!_blocked) {
-      StringBuffer uri = StringBuffer();
-      uri.write(globals.SpringUriPath);
-      uri.write("/api/team/");
-      uri.write(_group.id);
-      uri.write("/post");
+    _deviceWidth = MediaQuery.of(context).size.width;
+    _deviceHeight = MediaQuery.of(context).size.height - 
+      MediaQuery.of(context).padding.top - // Status bar height
+      AppBar().preferredSize.height;
 
-      var response = http.get(Uri.parse(uri.toString()));
-
-      response.then((value) {
-        if (value.statusCode != 200) {
-          print("error occured: " + value.statusCode.toString());
-        }
-        else {
-          dynamic posts = jsonDecode(value.body);
-          
-          List<Post> list = [];
-          for (var post in posts) {
-            setState(() {
-              list.add(Post.fromJson(post));
-            });
-          }
-          _postList = list;
-        }
-      });
-    }
+    super.didChangeDependencies();
   }
 
   @override void dispose() {
@@ -135,10 +156,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
-    double deviceHeight = MediaQuery.of(context).size.height - 
-      MediaQuery.of(context).padding.top - // Status bar height
-      AppBar().preferredSize.height;
+    if (!_blocked) {
+      getPostList();   
+    }
     
     return MaterialApp(
       home: Scaffold(
@@ -151,7 +171,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             children: [
               SingleChildScrollView(
                 child: SizedBox(
-                  height: deviceHeight,
+                  height: _deviceHeight,
                   child: AnimatedBuilder(
                     animation: _controller,
                     builder: (BuildContext context, _) {
@@ -159,16 +179,16 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           descBox(
-                            width: deviceWidth, 
+                            width: _deviceWidth, 
                             height: _maxHeight,
                             tag: "group_" + _receivedData['index'].toString()
                           ),
                           const SizedBox(height: 10),
                           gestureBar(
-                            height: 40
+                            height: 30
                           ),
                           postList(
-                            width: deviceWidth,
+                            width: _deviceWidth,
                             height: 180
                           )
                         ],
@@ -357,8 +377,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       child: Container(
         height: height,
         decoration: const BoxDecoration(
-          color: globals.IdentityColorLighter30
+          color: globals.IdentityColorLayer2
         ),
+        child: Icon(_collapsed ? Icons.keyboard_double_arrow_down : Icons.keyboard_double_arrow_up)
       )
     );
   }
@@ -398,22 +419,29 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(10),
-              child: _blocked ?
-              lockWidget :
-              createPostListView(
+              child: _blocked ? lockWidget :
+              _loaded ? createPostListView(
                 posts: _postList, 
-                onTab: () {}, 
+                onTab: (index) {
+                  Navigator.pushNamed(
+                    context, "/post",
+                    arguments: {
+                      "index": index,
+                      "post": _postList[index],
+                    }
+                  );
+                }, 
                 height: height, 
                 titleHeight: 40, 
                 imageSize: 40, 
                 tagsWidth: actualWidth, 
                 tagsHeight: 20,
                 maxLines: 3,
-                margin: 5,
-                padding: 10,
+                margin: const EdgeInsets.fromLTRB(margin, 5, margin, 5),
+                padding: const EdgeInsets.all(10),
                 bottomPadding: 90,
                 titleFontSize: 18
-              )
+              ) : loading()
             )
           )
         ],
@@ -478,7 +506,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           height: size,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: globals.IdentityColorLighter30,
+            color: globals.IdentityColor,
             boxShadow: [          
               BoxShadow(
                 color: globals.ShadowColor,

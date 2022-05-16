@@ -152,7 +152,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
           boxShadow: const [          
             BoxShadow(
               color: globals.ShadowColor,
-              spreadRadius: 4,
+              spreadRadius: 1,
               blurRadius: 8,
             )
           ]
@@ -234,7 +234,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   boxShadow: [          
                     BoxShadow(
                       color: globals.ShadowColor,
-                      spreadRadius: 4,
+                      spreadRadius: 1,
                       blurRadius: 8,
                     )
                   ]

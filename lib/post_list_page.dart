@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
-import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
@@ -27,7 +27,7 @@ class PostListPage extends StatefulWidget {
 }
 
 class _PostListPageState extends State<PostListPage> {
-  late List<Post> _postList;
+  List<Post> _postList = [];
 
   final List<String> _dropDownMenuItemList = [
     "One", "Two", "Three", "Four"
@@ -36,27 +36,36 @@ class _PostListPageState extends State<PostListPage> {
   final FocusNode _searchBarFocusNode = FocusNode();
   final TextEditingController _searchBarController = TextEditingController();
 
-  @override
-  void initState() {
-    _postList = [];
+  bool _loaded = false;
 
+  void getPostList() async {
     StringBuffer uri = StringBuffer();
     uri.write(globals.SpringUriPath);
     uri.write("/api/post");
 
-    var response = http.get(Uri.parse(uri.toString()));
+    var response = await http.get(Uri.parse(uri.toString()));
 
-    response.then((value) {
-      if (value.statusCode != 200) {
-        print("error occured");
-      }
-      else {
-        List<dynamic> posts = jsonDecode(value.body);
-        for (var post in posts) {
-          _postList.add(Post.fromJson(post));
-        }
-      }
+    if (response.statusCode != 200) {
+      print("error occured: " + response.statusCode.toString());
+      return;
+    }
+
+    List<Post> postList = [];
+
+    List<dynamic> jsonArray = jsonDecode(response.body);
+    for (var json in jsonArray) {
+      postList.add(Post.fromJson(json));
+    }
+
+    setState(() {
+      _postList = postList;
+      _loaded = true;
     });
+  }
+
+  @override
+  void initState() {
+    getPostList();
 
     widget.pageController.addListener(() {
       if(_searchBarFocusNode.hasFocus) {
@@ -78,10 +87,9 @@ class _PostListPageState extends State<PostListPage> {
     _searchBarFocusNode.unfocus();
     _searchBarController.clear();
   }
-
+  
   @override
   Widget build(BuildContext context) {
-    const double margin = 5;
     const double padding = 15;
     const double innerPadding = 10;
 
@@ -90,7 +98,7 @@ class _PostListPageState extends State<PostListPage> {
 
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.fromLTRB(padding, 10, padding, 0),
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         decoration: const BoxDecoration(
           color: globals.BackgroundColor
         ),
@@ -99,16 +107,25 @@ class _PostListPageState extends State<PostListPage> {
             SearchBar(
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
-              dropDownMenuItemList: _dropDownMenuItemList
+              dropDownMenuItemList: _dropDownMenuItemList,
+              margin: const EdgeInsets.only(bottom: 15),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)
             ),
             Expanded(
-              child: createPostListView(
+              child: _loaded ? createPostListView(
                 posts: _postList, 
-                onTab: () {
+                onTab: (index) {
                   if(_searchBarFocusNode.hasFocus) {
                     SearchBarLostedFocus();
                   }
 
+                  Navigator.pushNamed(
+                    widget.context, "/post",
+                    arguments: {
+                      "index": index,
+                      "post": _postList[index],
+                    }
+                  );
                 }, 
                 height: 180, 
                 titleHeight: 40, 
@@ -116,12 +133,12 @@ class _PostListPageState extends State<PostListPage> {
                 tagsWidth: actualWidth, 
                 tagsHeight: 20,
                 maxLines: 3,
-                margin: margin,
-                padding: innerPadding,
+                margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                padding: const EdgeInsets.all(innerPadding),
                 bottomPadding: globals.ListViewBottomPadding,
                 titleFontSize: 18
-              )
-            )
+              ) : loading()
+            ) 
           ],
         ),
       ),

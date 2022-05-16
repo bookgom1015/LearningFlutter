@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/group.dart';
@@ -26,7 +27,7 @@ class GroupListPage extends StatefulWidget {
 }
 
 class _GroupListPageState extends State<GroupListPage> {
-  late List<Group> _groups;
+  List<Group> _groupList = [];
 
   final List<String> _dropDownMenuItemList = [
     "One", "Two", "Three", "Four"
@@ -35,37 +36,44 @@ class _GroupListPageState extends State<GroupListPage> {
   final FocusNode _searchBarFocusNode = FocusNode();
   final TextEditingController _searchBarController = TextEditingController();
 
-  @override
-  void initState() {
-    _groups = [];
+  bool _loaded = false;
 
+  void getGroupList() async {
     StringBuffer uri = StringBuffer();
     uri.write(globals.SpringUriPath);
     uri.write("/api/team");
 
-    var response = http.get(Uri.parse(uri.toString()));
+    var response = await http.get(Uri.parse(uri.toString()));
 
-    response.then((value) {
-      if (value.statusCode != 200) {
-        print("error occured");
-      }
-      else {
-        Map<String, dynamic> json = jsonDecode(value.body);
-        List<dynamic> temaList = json["teams"];
-        for (var team in temaList) {
-          _groups.add(Group.fromJson(team));
-        }
-      }
+    if (response.statusCode != 200) {
+      print("error occured: " + response.statusCode.toString());
+      return;
+    }
+
+    List<Group> groupList  = [];
+
+    Map<String, dynamic> json = jsonDecode(response.body);
+    List<dynamic> teamJsonArray = json["teams"];
+    for (var teamJson in teamJsonArray) {
+      groupList.add(Group.fromJson(teamJson));
+    }
+
+    setState(() {
+      _groupList = groupList;
+      _loaded = true;
     });
+  }
+
+  @override
+  void initState() {
+    getGroupList();    
 
     widget.pageController.addListener(() {
       if(_searchBarFocusNode.hasFocus) {
         SearchBarLostedFocus();
       }
     });
-    super.initState();
-
-    
+    super.initState();    
   }
 
   @override
@@ -84,75 +92,33 @@ class _GroupListPageState extends State<GroupListPage> {
   @override
   Widget build(BuildContext _) {
     const double margin = 5;
-    const double outerPadding = 15;
-    const double innerPadding = 15;
+    const double padding = 10;
     const double imageBoxSize = 40;
     const double containerHeight = 70;
-    double deviceWidth = MediaQuery.of(context).size.width;
-    double actualWidth = deviceWidth - outerPadding - outerPadding - innerPadding - innerPadding;
-    double postDescWidth = actualWidth - imageBoxSize;
+
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    final double actualWidth = deviceWidth - padding - padding;
+    final double postDescWidth = actualWidth - imageBoxSize;
 
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(
-        padding: const EdgeInsets.fromLTRB(outerPadding, 10, outerPadding, 0),
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Column(
           children: [
             SearchBar(
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
               dropDownMenuItemList: _dropDownMenuItemList,
+              margin: const EdgeInsets.only(bottom: 15),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
-                itemCount: _groups.length,
-                itemBuilder: (_, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      if(_searchBarFocusNode.hasFocus) {
-                        SearchBarLostedFocus();
-                      }
-                      //Navigator.pushNamed(
-                      //  widget.context, "/group_details", 
-                      //  arguments: { 
-                      //    "user": widget.user,
-                      //    "isPrivate": widget.isPrivate,
-                      //    "index": index,                          
-                      //    "title": _postList[index].title,
-                      //    "host": _postList[index].host,
-                      //    "image": _postList[index].image,
-                      //    "desc": _postList[index].desc
-                      //  }
-                      //);
-                      Navigator.pushNamed(
-                        widget.context, "/group_details",
-                        arguments: { 
-                          "index": index,
-                          "user": widget.user,
-                          "subs": widget.subs,
-                          "group": _groups[index]
-                        }
-                      );
-                    },
-                    child: Container(
-                      height: containerHeight,
-                      padding: const EdgeInsets.fromLTRB(innerPadding, 0, innerPadding, 0),
-                      margin: const EdgeInsets.fromLTRB(0, margin, 0, margin),
-                      decoration: BoxDecoration(
-                        color: globals.IdentityColor,
-                        borderRadius: globals.DefaultRadius
-                      ),
-                      child: Row(
-                        children: [
-                          ImageBox(40, index),
-                          PostDesc(postDescWidth, imageBoxSize, index),
-                        ],
-                      )
-                    ),
-                  );
-                },
-              )
+              child: _loaded ? groupList(
+                width: postDescWidth,
+                height: containerHeight, 
+                margin: const EdgeInsets.all(margin), 
+                padding: const EdgeInsets.all(padding)) : loading()
             )
           ]
         )
@@ -160,68 +126,107 @@ class _GroupListPageState extends State<GroupListPage> {
     );
   }
 
-  // ignore: non_constant_identifier_names
-  Widget ImageBox(double size, int index) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Hero(
-          tag: "group_" + index.toString(), 
+  Widget groupList({
+      required double width,
+      required double height,
+      required EdgeInsets margin,
+      required EdgeInsets padding}) {
+    const EdgeInsets descPadding = EdgeInsets.fromLTRB(15, 0, 15, 0);
+    const double tagsHeight = 20;
+    const double imageSize = 40;
+
+    final double actualWidth = width - margin.left - margin.right - padding.left - padding.right - 
+                                descPadding.left - descPadding.right - imageSize;
+    final double titleHeight = height - tagsHeight - padding.top - padding.bottom;
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
+      itemCount: _groupList.length,
+      itemBuilder: (_, index) {
+        return GestureDetector(
+          onTap: () {
+            if(_searchBarFocusNode.hasFocus) {
+              SearchBarLostedFocus();
+            }
+            Navigator.pushNamed(
+              widget.context, "/group_details",
+              arguments: { 
+                "index": index,
+                "user": widget.user,
+                "subs": widget.subs,
+                "group": _groupList[index]
+              }
+            );
+          },
           child: Container(
-            width: size,
-            height: size,
+            height: height,
+            margin: margin,
+            padding: padding,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-               image: AssetImage(_groups[index].filePath)
-              )
-            )
-          )
-        )
-      ],
-    );
-  }
-
-  // ignore: non_constant_identifier_names
-  Widget PostDesc(double width, double height, int index) {
-    const double padding = 15;
-    double actualWidth = width - padding - padding;
-    double tagsHeight = 20;
-    double titleHeight = height - tagsHeight;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(padding, 0, padding, 0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: actualWidth,
-            height: titleHeight,
-            child: Row(                        
+              color: globals.IdentityColor,
+              borderRadius: globals.DefaultRadius
+            ),
+            child: Row(
               children: [
-                Text(
-                  _groups[index].name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: globals.FocusedForeground
-                  ),
+                // Profile
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Hero(
+                      tag: "group_" + index.toString(), 
+                      child: Container(
+                        width: imageSize,
+                        height: imageSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                           image: AssetImage(_groupList[index].filePath)
+                          )
+                        )
+                      )
+                    )
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  _groups[index].hostId.toString(),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: globals.FocusedForeground
-                  ),
+                // Descriptions
+                Padding(
+                  padding: descPadding,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: actualWidth,
+                        height: titleHeight,
+                        child: Row(                        
+                          children: [
+                            Text(
+                              _groupList[index].name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: globals.FocusedForeground
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _groupList[index].hostId.toString(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: globals.FocusedForeground
+                              ),
+                            ),
+                          ],
+                        )
+                      ),
+                      TagList(width: actualWidth, height: tagsHeight, tagList: _groupList[index].tags)          
+                    ],
+                  )
                 ),
               ],
             )
           ),
-          TagList(width: actualWidth, height: tagsHeight, tagList: _groups[index].tags)          
-        ],
-      )
+        );
+      },
     );
   }
 }

@@ -40,7 +40,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
 
   late BuildContext _context;
 
-  void send() {
+  void send() async {
     StringBuffer uri = StringBuffer();
     uri.write(globals.SpringUriPath);
     uri.write("/api/team/");
@@ -50,7 +50,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     String spaceless = _tags.replaceAll(" ", "");
     var tags = spaceless.split(",");
 
-    var response = http.post(
+    var response = await http.post(
       Uri.parse(uri.toString()),
       headers: { "Content-Type": "application/json", "Authorization" : _user.token },
       body: jsonEncode({
@@ -60,14 +60,12 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
       })
     );
 
-    response.then((value) {
-      if (value.statusCode != 200) {
-        print("error occured: " + value.statusCode.toString());
-      }
-      else {
-        Navigator.pop(_context);
-      }
-    });
+    if (response.statusCode != 200) {
+      print("error occured: " + response.statusCode.toString());
+      return;
+    }
+
+    Navigator.pop(_context);
   }
 
   @override
@@ -166,7 +164,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
               margin: const EdgeInsets.all(10),
               padding: const EdgeInsets.only(left: 10, right: 10),
               decoration: const BoxDecoration(
-                color: globals.IdentityColorDarker20,
+                color: globals.BackgroundColor,
                 borderRadius: BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10))
               ),
               child: TextFormField(
@@ -222,7 +220,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
               margin: const EdgeInsets.all(10),
               padding: const EdgeInsets.only(left: 10, right: 10),
               decoration: const BoxDecoration(
-                color: globals.IdentityColorDarker20,
+                color: globals.BackgroundColor,
                 borderRadius: BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10))
               ),
               child: TextFormField(
@@ -313,7 +311,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
         height: 15,
         margin: const EdgeInsets.only(top: 10),
         decoration: const BoxDecoration(
-          color: globals.IdentityColorLighter30
+          color: globals.IdentityColorLayer1
         ),
       )
     );
@@ -331,7 +329,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
           margin: const EdgeInsets.all(15),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: globals.IdentityColorDarker20,
+            color: globals.BackgroundColor,
             borderRadius: globals.DefaultRadius
           ),
           child: TextFormField(

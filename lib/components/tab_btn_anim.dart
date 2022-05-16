@@ -35,8 +35,8 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
     );
 
     _circleColorAnimation = ColorTween(
-      begin: globals.IdentityColorLighter50,
-      end: globals.IdentityColorLighter70
+      begin: globals.IdentityColorLayer2,
+      end: globals.IdentityColorLayer1
     ).animate(_controller);
 
     _sizeCurveAnimation = CurvedAnimation(

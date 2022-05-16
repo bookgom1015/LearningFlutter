@@ -3,6 +3,7 @@ import 'package:flutter_application_learning/components/signup_page.dart';
 import 'package:flutter_application_learning/group_details_page.dart';
 import 'package:flutter_application_learning/login_page.dart';
 import 'package:flutter_application_learning/main_page.dart';
+import 'package:flutter_application_learning/post_page.dart';
 import 'package:flutter_application_learning/write_post.dart';
 
 MaterialApp createRouter() {
@@ -14,6 +15,7 @@ MaterialApp createRouter() {
       '/signup': (context) => const SignupPage(),
       '/group_details': (context) => const GroupDetailsPage(),
       '/write_post': (context) => const WritePostPage(),
+      '/post': (context) => const PostPage(),
     },
   );
 }

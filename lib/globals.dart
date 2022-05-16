@@ -1,22 +1,22 @@
 library kbg.globals;
 import 'package:flutter/material.dart';
 
-const Color IdentityColor = Color.fromARGB(255, 58, 58, 58);
-const Color IdentityColorDarker20 = Color.fromARGB(255, 38, 38, 38);
-const Color IdentityColorLighter30 = Color.fromARGB(255, 88, 88, 88);
-const Color IdentityColorLighter50 = Color.fromARGB(255, 108, 108, 108);
-const Color IdentityColorLighter70 = Color.fromARGB(255, 128, 128, 128);
-const Color BackgroundColor = Color.fromARGB(255, 27, 27, 27);
+const Color IdentityColor = Color.fromARGB(255, 169, 223, 240);
+const Color IdentityColorLayer1 = Color.fromARGB(255, 255, 255, 255);
+const Color IdentityColorLayer2 = Color.fromARGB(255, 245, 245, 245);
+const Color BackgroundColor = Color.fromARGB(255, 245, 245, 245);
 
-const Color ShadowColor = Color.fromARGB(127, 0, 0, 0);
+const Color ShadowColor = Color.fromARGB(143, 66, 66, 66);
 
 const Color LoginBackground =  Color.fromARGB(85, 0, 0, 0);
 
-const Color FocusedForeground = Colors.white;
-const Color UnfocusedForeground = Colors.white54;
+const Color FocusedForeground = Colors.black;
+const Color UnfocusedForeground = Colors.black26;
 
 const Color FocusedDangerForeground = Colors.red;
 const Color UnfocusedDangerForeground = Color.fromARGB(255, 158, 11, 11);
+
+const Color TagForeground = Color.fromARGB(255, 59, 29, 30);
 
 BorderRadius DefaultRadius = BorderRadius.circular(10);
 

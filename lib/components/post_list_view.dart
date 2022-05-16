@@ -6,15 +6,15 @@ import 'package:flutter_application_learning/globals.dart' as globals;
 
 Widget createPostListView({
   required List<Post> posts,
-  required VoidCallback onTab,
+  required void Function(int) onTab,
   required double height,
   required double titleHeight,
   required double imageSize,
   required double tagsWidth,
   required double tagsHeight,
   int maxLines = 1,
-  double margin = 0,
-  double padding = 0,
+  EdgeInsets margin = EdgeInsets.zero,
+  EdgeInsets padding = EdgeInsets.zero,
   double bottomPadding = 0,
   double titleFontSize = 15,
 }) {
@@ -23,16 +23,18 @@ Widget createPostListView({
     itemCount: posts.length,
     itemBuilder: (_, index) {
       return GestureDetector(
-        onTap: onTab,
+        onTap: () {
+          onTab(index);
+        },
         child: Container(
           height: height,
-          margin: EdgeInsets.fromLTRB(0, margin, 0, margin),
+          margin: margin,
           decoration: BoxDecoration(
             color: globals.IdentityColor,
-            borderRadius: globals.DefaultRadius
+            borderRadius: globals.DefaultRadius,
           ),
           child: Padding(
-            padding: EdgeInsets.all(padding),
+            padding: padding,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +85,7 @@ Widget createPostListView({
                         )
                       ),
                       Text(
-                        posts[index].id.toString(),
+                        posts[index].user.userNickname,
                         style: const TextStyle(
                           color: globals.FocusedForeground
                         ),

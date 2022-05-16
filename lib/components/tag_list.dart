@@ -24,8 +24,9 @@ class TagList extends StatelessWidget {
     double accum = 0;
 
     var textStyle = const TextStyle(
-      color: globals.FocusedForeground,
-      fontSize: 12
+      color: globals.TagForeground,
+      fontSize: 12,
+      fontWeight: FontWeight.bold
     );
 
     return SizedBox(
@@ -60,7 +61,7 @@ class TagList extends StatelessWidget {
                 margin: const EdgeInsets.only(right: margin),
                 padding: const EdgeInsets.fromLTRB(padding, 0, padding, 0),
                 decoration: BoxDecoration(
-                  color: globals.IdentityColorLighter30,
+                  color: globals.IdentityColorLayer1,
                   borderRadius: BorderRadius.circular(5)
                 ),
                 child: Center(

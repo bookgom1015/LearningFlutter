@@ -5,11 +5,16 @@ class SearchBar extends StatefulWidget {
   final FocusNode focusNode;
   final TextEditingController controller;
   final List<String> dropDownMenuItemList;
-  const SearchBar({
+  EdgeInsets margin;
+  EdgeInsets padding;
+
+  SearchBar({
     Key? key, 
     required this.focusNode,
     required this.controller,
-    required this.dropDownMenuItemList}) : super(key: key);
+    required this.dropDownMenuItemList,
+    this.margin = EdgeInsets.zero,
+    this.padding = EdgeInsets.zero}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchBarState();
@@ -34,7 +39,8 @@ class _SearchBarState extends State<SearchBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
+      margin: widget.margin,
+      padding: widget.padding,
       child: TextFormField(
         controller: widget.controller,
         focusNode: widget.focusNode,

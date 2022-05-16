@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
+import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/reply.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
@@ -32,6 +33,8 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
   late Animation<double> _curveAnimation;
   late Animation<double> _heightAnimation;
 
+  late Post _post;
+
   @override
   void initState() {
     _controller = AnimationController(
@@ -58,8 +61,16 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
   }
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+
+    _post = _receivedData["post"];
+
+    super.didChangeDependencies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     double deviceWidth = MediaQuery.of(context).size.width;
     double extendedHeight = MediaQuery.of(context).size.height * 0.5;
@@ -70,7 +81,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
 
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(navTitle: _receivedData["title"]),
+        appBar: createAppBar(navTitle: _post.title),
         body: AnimatedBuilder(
           animation: _controller,
           builder: (BuildContext context, _) { 
@@ -124,12 +135,14 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
                     margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      image: DecorationImage(image: AssetImage(_receivedData['image']))
+                      image: DecorationImage(
+                        image: AssetImage(_post.user.userProfile.filePath)
+                      )
                     ),
                   )
                 ),
                 Text(
-                  _receivedData['host'],
+                  _post.user.userNickname,
                   style: const TextStyle(
                     color: globals.FocusedForeground
                   ),
@@ -140,15 +153,16 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
             Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                  padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
                   decoration: BoxDecoration(
-                    color: globals.IdentityColorLighter50,
+                    color: globals.IdentityColorLayer1,
                     borderRadius: globals.DefaultRadius
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      "대충 글 써질 곳",
-                      style: TextStyle(
+                      _post.desc,
+                      maxLines: null,
+                      style: const TextStyle(
                         color: globals.FocusedForeground
                       ),
                     ),
@@ -165,7 +179,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
   Widget repliesPartial(double width) {
     return Container(
       decoration: const BoxDecoration(
-        color: globals.IdentityColorDarker20,
+        color: globals.IdentityColor,
         boxShadow: [
           BoxShadow(
             color: globals.ShadowColor,
@@ -182,7 +196,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
             children: [
               Container(
                 decoration: const BoxDecoration(
-                  color: globals.IdentityColorDarker20,                                  
+                  color: globals.IdentityColor,                                  
                 ),
                 width: width,
                 height: _shrinkeddHeight,
@@ -239,7 +253,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),
                           decoration: BoxDecoration(
-                            color: globals.IdentityColorLighter30,
+                            color: globals.IdentityColorLayer1,
                             borderRadius: globals.DefaultRadius                                    
                           ),
                           child: Text(

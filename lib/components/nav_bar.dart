@@ -10,24 +10,13 @@ AppBar createAppBar({required String navTitle, double? btnSize, List<AppBarBtn>?
         SizedBox(
           width: 200,
           child: Stack(
-            children: <Widget>[
-              Text(
-                navTitle,
-                style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                foreground: Paint()
-                  ..style = PaintingStyle.stroke
-                  ..strokeWidth = 2
-                  ..color = Colors.grey.shade600, // <-- Border color
-                ),
-              ),
+            children: <Widget>[              
               Text(
                 navTitle,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // <-- Inner color
+                  color: globals.FocusedForeground, // <-- Inner color
                 ),
               ),
             ],

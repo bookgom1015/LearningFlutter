@@ -64,24 +64,13 @@ class _TitleFadeInAnimState extends State<TitleFadeInAnim> with SingleTickerProv
               -100 * (1 - _animation.value), 0, 0
             ),
             child: Stack(
-              children: <Widget>[
-                Text(
-                  widget.title,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    foreground: Paint()
-                      ..style = PaintingStyle.stroke
-                      ..strokeWidth = 2
-                      ..color = globals.BackgroundColor,
-                  ),
-                ),
+              children: <Widget>[                
                 Text(
                   widget.title,
                   style: const TextStyle( 
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: globals.FocusedForeground,
                   ),
                 )
               ],
@@ -92,3 +81,16 @@ class _TitleFadeInAnimState extends State<TitleFadeInAnim> with SingleTickerProv
     );
   }
 }
+
+// Text shadows
+//Text(
+//  widget.title,
+//  style: TextStyle(
+//    fontSize: 24,
+//    fontWeight: FontWeight.bold,
+//    foreground: Paint()
+//      ..style = PaintingStyle.stroke
+//      ..strokeWidth = 2
+//      ..color = globals.BackgroundColor,
+//  ),
+//),
