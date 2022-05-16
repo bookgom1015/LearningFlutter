@@ -41,6 +41,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
   late BuildContext _context;
 
   bool _collapsed = false;
+  bool _sending = false;
 
   void send() async {
     StringBuffer uri = StringBuffer();
@@ -124,7 +125,14 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
           btnList: [
             AppBarBtn(
               btnIcon: Icons.send,
-              btnFunc: send
+              btnFunc: () {
+                if (!_sending) {
+                  setState(() {
+                    _sending = true;
+                  });                  
+                  send();
+                }
+              }
             )
           ]
         ),
