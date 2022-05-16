@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_learning/components/nav_bar_clipper.dart';
 import 'package:flutter_application_learning/components/title_anim.dart';
 import 'package:flutter_application_learning/components/tab_btn_anim.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
@@ -26,11 +25,6 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   final List<String> _titleList = ["공개글 목록", "팀 목록", "마이페이지"];
   late String _title;
 
-  late AnimationController _controller;
-  late Animation<double> _curveAnimation;
-  late Animation<double> _rotateAnimation;
-  late Animation _colorAnimation;
-
   final List<IconData> _icons = [
     Icons.list,
     Icons.group,
@@ -41,28 +35,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   void initState() {
     _pageController = PageController();
     _title = _titleList[0];
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds:  globals.BasicAnimDuration)
-    );
-
-     _curveAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOutQuart
-    );
-
-    _rotateAnimation = Tween<double>(
-      begin: 0,
-      end: 1
-    ).animate(_curveAnimation);
-
-     _colorAnimation = ColorTween(
-      begin: globals.FocusedForeground,
-      end: globals.UnfocusedForeground
-    ).animate(_curveAnimation);
-
-    _controller.forward();
+    
     super.initState();
   }
 
@@ -70,7 +43,6 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   void dispose() {
     super.dispose();
     _pageController.dispose();
-    _controller.dispose();
   }
 
   @override
@@ -103,7 +75,11 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                     model: model
                   ),
                 ),
-                bottomNavigationBar: bottomNavBar(context, model),
+                bottomNavigationBar: bottomNavBar(
+                  model: model,
+                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
+                ),
                 body: PageView.builder(
                   controller: _pageController,
                   onPageChanged: (index) { 
@@ -112,12 +88,6 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                         _title = _titleList[index];
                       });
                       model.updateIndex(index);
-                      if (index != 1) {
-                        _controller.forward();
-                      }
-                      else {
-                        _controller.reverse();
-                      }
                     }
                     if (model.index == index) {
                       model.isTapped = false;
@@ -136,128 +106,59 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget bottomNavBar(BuildContext context, TabButtonModel model) {
-    final double deviceWidth = MediaQuery.of(context).size.width;
-    const double navBarBtnRadius = globals.NavBarBtnSize * 0.5;
-    const double padding = 5;
+  Widget bottomNavBar({
+      required TabButtonModel model,
+      EdgeInsets margin = EdgeInsets.zero,
+      EdgeInsets padding = EdgeInsets.zero}) {
 
-    Widget navBar = Positioned(
-      top: 30,
+    return SizedBox(
+      height: globals.NavBarHeight + margin.bottom,
       child: Container(
-        width: deviceWidth,
-        height: globals.NavBarHeight,
-        padding: const EdgeInsets.fromLTRB(padding, 0, padding, 0),
+        margin: margin,
         decoration: BoxDecoration(
+          color: globals.IdentityColor,          
           borderRadius: BorderRadius.circular(50),
           boxShadow: const [          
             BoxShadow(
               color: globals.ShadowColor,
-              spreadRadius: 1,
+              spreadRadius: 4,
               blurRadius: 8,
             )
           ]
         ),
-        child: ClipPath(
-          clipper: NavBarClipper(globals.NavBarClipSize * 0.5, globals.NavBarClipRight),
-          child: Container(
-            decoration: BoxDecoration(
-              color: globals.IdentityColor,          
-              borderRadius: BorderRadius.circular(50)
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(right: globals.NavBarClipSize),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  globals.TabSize,
-                  (index) {                          
-                    return Container(
-                      padding: const EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                      child: TabButtonAnim(
-                        model: model,
-                        index: index,
-                        callback: () {
-                          if (model.index == index) {
-                            return;
-                          }
-                          if (index != 1) {
-                            _controller.forward();
-                          }
-                          else {
-                            _controller.reverse();
-                          }
-                          setState(() {
-                            _title = _titleList[index];
-                          });
-                          model.isTapped = true;
-                          model.updateIndex(index);
-                          _pageController.animateToPage(
-                            index, 
-                            duration: const Duration(
-                              milliseconds: globals.BasicAnimDuration
-                            ), 
-                            curve: Curves.easeInQuart,
-                          );
-                        },
-                        icons: _icons
-                      ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            globals.TabSize,
+            (index) {                          
+              return Container(
+                padding: padding,
+                child: TabButtonAnim(
+                  model: model,
+                  index: index,
+                  callback: () {
+                    if (model.index == index) {
+                      return;
+                    }
+                    setState(() {
+                      _title = _titleList[index];
+                    });
+                    model.isTapped = true;
+                    model.updateIndex(index);
+                    _pageController.animateToPage(
+                      index, 
+                      duration: const Duration(
+                        milliseconds: globals.BasicAnimDuration
+                      ), 
+                      curve: Curves.easeInQuart,
                     );
-                  }
+                  },
+                  icons: _icons
                 ),
-              )
-            )
-          )
+              );
+            }
+          ),
         )
-      ),
-    );
-
-    Widget addGroupBtn = Positioned(
-      top: 0,
-      right: padding + globals.NavBarClipRight + (globals.NavBarClipSize - globals.NavBarBtnSize) * 0.5,
-      child: GestureDetector(
-        onTap: () {
-          if (model.index != 2) {
-            
-          }                
-        },
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (BuildContext context, _) {
-            return Transform.rotate(
-              angle: 45 * globals.DegToRad * _rotateAnimation.value,
-              child: Container(         
-                width: globals.NavBarBtnSize,
-                height: globals.NavBarBtnSize,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: globals.IdentityColor,
-                  boxShadow: [          
-                    BoxShadow(
-                      color: globals.ShadowColor,
-                      spreadRadius: 1,
-                      blurRadius: 8,
-                    )
-                  ]
-                ),
-                child: Icon(
-                  Icons.add,
-                  color: _colorAnimation.value,
-                  size: globals.NavBarBtnSize,
-                ),
-              )
-            );
-          }
-        )
-      )
-    );
-
-    return SizedBox(
-      height: globals.NavBarHeight + navBarBtnRadius + 10,
-      child: Stack(
-        children: [
-          navBar,
-          addGroupBtn
-        ],
       )
     );
   }

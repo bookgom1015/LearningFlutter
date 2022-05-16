@@ -19,7 +19,8 @@ class TagList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const double margin = 5;
-    const double padding = 10;
+    const double padding = 5;
+
     double extraSpace = margin + padding + padding;
     double accum = 0;
 

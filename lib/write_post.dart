@@ -40,6 +40,8 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
 
   late BuildContext _context;
 
+  bool _collapsed = false;
+
   void send() async {
     StringBuffer uri = StringBuffer();
     uri.write(globals.SpringUriPath);
@@ -91,6 +93,13 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     _animation.addListener(() {
       setState(() {
         _currHeight = _refHeight + (_targetHeight - _refHeight) * _controller.value;
+
+        if (_currHeight == 0) {
+          _collapsed = true;
+        }
+        else if (_currHeight == _maxHeight) {
+          _collapsed = false;
+        }
       });
     });
     super.initState();
@@ -127,8 +136,10 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               titleAndTags(deviceWidth),
-              GestureBar(),
-              DescBox()
+              const SizedBox(height: 5),
+              gestureBar(),
+              const SizedBox(height: 5),
+              descBox()
             ],
           ),
         ),
@@ -163,10 +174,6 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
             child: Container(
               margin: const EdgeInsets.all(10),
               padding: const EdgeInsets.only(left: 10, right: 10),
-              decoration: const BoxDecoration(
-                color: globals.BackgroundColor,
-                borderRadius: BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10))
-              ),
               child: TextFormField(
                 style: const TextStyle(
                   color: globals.FocusedForeground
@@ -178,8 +185,18 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
                 decoration: const InputDecoration(
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                      width: 2
+                    )
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                      width: 2
+                    )
+                  ),
                 ),
                 onChanged: (text) {
                    setState(() {
@@ -193,7 +210,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
       ),
     );
 
-    Widget descWidget = Container(
+    Widget tagWidget = Container(
       height: 60,
       margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
       padding: const EdgeInsets.only(left: 10),
@@ -219,10 +236,6 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
             child: Container(
               margin: const EdgeInsets.all(10),
               padding: const EdgeInsets.only(left: 10, right: 10),
-              decoration: const BoxDecoration(
-                color: globals.BackgroundColor,
-                borderRadius: BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10))
-              ),
               child: TextFormField(
                 style: const TextStyle(
                   color: globals.FocusedForeground
@@ -234,8 +247,18 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
                 decoration: const InputDecoration(
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                      width: 2
+                    )
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                      width: 2
+                    )
+                  )
                 ),
                 onChanged: (text) {
                    setState(() {
@@ -263,7 +286,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
               child: Column(
                 children: [
                   titleWidget,
-                  descWidget
+                  tagWidget
                 ],
               )
             )
@@ -273,7 +296,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     );
   }
 
-  Widget GestureBar() {
+  Widget gestureBar() {
     return GestureDetector(
       onVerticalDragStart: (details) {
         _prevY = details.globalPosition.dy;
@@ -308,19 +331,19 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
         _controller.forward();
       },
       child: Container(
-        height: 15,
-        margin: const EdgeInsets.only(top: 10),
+        height: 30,
         decoration: const BoxDecoration(
-          color: globals.IdentityColorLayer1
+          color: Colors.transparent
         ),
+        child: Icon(_collapsed ? Icons.keyboard_double_arrow_down : Icons.keyboard_double_arrow_up),
       )
     );
   }
 
-  Widget DescBox() {
+  Widget descBox() {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
+        margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
         decoration: BoxDecoration(
           color: globals.IdentityColor,
           borderRadius: globals.DefaultRadius

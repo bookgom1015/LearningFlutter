@@ -27,7 +27,7 @@ class GroupDetailsPage extends StatefulWidget {
 class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerProviderStateMixin {
   Map _receivedData = {};
 
-  final double _maxHeight = 240;
+  final double _maxHeight = 200;
   final double _triggerVelocity = 250000; // Squared
   late double _middleHeight;
   late double _currHeight;
@@ -183,7 +183,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                             height: _maxHeight,
                             tag: "group_" + _receivedData['index'].toString()
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           gestureBar(
                             height: 30
                           ),
@@ -224,7 +224,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           children: [
             SizedBox(
               width: width,
-              height: height - 40,
+              height: height,
               child: Row(
                 children: [
                   Expanded(
@@ -319,20 +319,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            SizedBox(              
-              width: width,
-              height: 30,
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                decoration: BoxDecoration(
-                  color: globals.IdentityColor,
-                  borderRadius: globals.DefaultRadius
-                ),
-                child: TagList(tagList: _group.tags, width: width - 20, height: 20),
-              )
-            )
           ]
         )
       )
@@ -377,7 +363,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       child: Container(
         height: height,
         decoration: const BoxDecoration(
-          color: globals.IdentityColorLayer2
+          color: Colors.transparent
         ),
         child: Icon(_collapsed ? Icons.keyboard_double_arrow_down : Icons.keyboard_double_arrow_up)
       )
@@ -418,7 +404,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         children: [
           Expanded(
             child: Container(
-              margin: const EdgeInsets.all(10),
               child: _blocked ? lockWidget :
               _loaded ? createPostListView(
                 posts: _postList, 
@@ -439,7 +424,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                 maxLines: 3,
                 margin: const EdgeInsets.fromLTRB(margin, 5, margin, 5),
                 padding: const EdgeInsets.all(10),
-                bottomPadding: 90,
+                bottomPadding: globals.ListViewBottomPadding,
                 titleFontSize: 18
               ) : loading()
             )

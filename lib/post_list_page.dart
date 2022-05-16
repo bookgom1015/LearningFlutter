@@ -94,7 +94,7 @@ class _PostListPageState extends State<PostListPage> {
     const double innerPadding = 10;
 
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double actualWidth = deviceWidth - padding - padding - innerPadding - innerPadding;
+    final double actualWidth = deviceWidth - padding - padding;
 
     return Scaffold(
       body: Container(

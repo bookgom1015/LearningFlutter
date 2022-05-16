@@ -153,12 +153,20 @@ class _SignupPageState extends State<SignupPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ElevatedButton.icon(
-          onPressed: () {
-            signup();
-          },
-          icon: const Icon(Icons.add_outlined),
-          label: const Text("계정 생성")
+        ElevatedButton(
+          onPressed: signup,
+          style: ElevatedButton.styleFrom(
+            primary: globals.IdentityColor,
+            onPrimary: globals.FocusedForeground
+          ),
+          child: Row(
+            children: const [
+              Icon(Icons.add_outlined),
+              Text(
+                "계정 생성"
+              )
+            ],
+          )
         )
       ],
     );
