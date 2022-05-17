@@ -98,7 +98,17 @@ class _MyPageState extends State<MyPage> {
             Expanded(
               child: createGroupListView(
                 groups: widget.subs.groups,
-                onTab: (index) {},
+                onTab: (index) {
+                  Navigator.pushNamed(
+                    widget.context, "/group_details",
+                    arguments: { 
+                      "index": index,
+                      "user": widget.user,
+                      "subs": widget.subs,
+                      "group": widget.subs.groups[index]
+                    }
+                  );
+                },
                 width: postDescWidth,
                 height: containerHeight,
                 tagsHeight: 20,
