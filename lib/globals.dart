@@ -44,3 +44,6 @@ const double AppBarHeight = 56;
 const String SpringUriPath = "http://3.35.47.9:3000";
 
 const double DegToRad = 0.01745329251;
+
+const double GestureBarTriggerSpeed = 600;
+const double GestureBarMaxSpeed = 3000;

@@ -55,7 +55,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     final List<Widget> pageList = [
       PostListPage(user: user, subs: subs, context: context, pageController: _pageController), 
       GroupListPage(user: user, subs: subs, context: context, pageController: _pageController), 
-      const MyPage()
+      MyPage(user: user, subs: subs, context: context, pageController: _pageController)
     ];
 
     return MaterialApp(

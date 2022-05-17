@@ -47,46 +47,56 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    final double deviceHeight = MediaQuery.of(context).size.height - 
+      MediaQuery.of(context).padding.top - // Status bar height
+      AppBar().preferredSize.height;
+
     return MaterialApp(
       home: Scaffold(
         appBar: createAppBar(navTitle: "로그인"),
-        body: Container(
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            //image: DecorationImage(
-            //  image: AssetImage('assets/images/8k_wallpaper.jpg'),
-            //  fit: BoxFit.fill
-            //)
-          ),
-          child: ClipRect(
-            child: /*BackdropFilter*/(
-              //filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              /*child:*/ Container(
-                height: 480,                
-                margin: const EdgeInsets.fromLTRB(25, 0, 25, 0),
-                decoration: BoxDecoration(
-                  color: globals.LoginBackground,
-                  borderRadius: globals.DefaultRadius,
-                ),
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      IdWidget(),
-                      const SizedBox(height: 20),
-                      PasswordWidget(),
-                      const SizedBox(height: 20),
-                      RememberMeWidget(),
-                      const SizedBox(height: 20),                      
-                      LoginWidget(context),
-                      const SizedBox(height: 15),
-                      SignUpWidget(context)
-                    ],
-                  ),
-                )
-              )
+        body: SingleChildScrollView(
+          child: Container(
+            width: deviceWidth,
+            height: deviceHeight,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              //image: DecorationImage(
+              //  image: AssetImage('assets/images/8k_wallpaper.jpg'),
+              //  fit: BoxFit.fill
+              //)
             ),
+            child: ClipRect(
+              child: /*BackdropFilter*/(
+                //filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                /*child:*/ Container(
+                  height: 480,                
+                  margin: const EdgeInsets.fromLTRB(25, 0, 25, 0),
+                  decoration: BoxDecoration(
+                    color: globals.LoginBackground,
+                    borderRadius: globals.DefaultRadius,
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        const SizedBox(height: 50),
+                        IdWidget(),
+                        const SizedBox(height: 20),
+                        PasswordWidget(),
+                        const SizedBox(height: 30),
+                        RememberMeWidget(),
+                        const SizedBox(height: 20),                      
+                        LoginWidget(context),
+                        const SizedBox(height: 50),
+                        SignUpWidget(context)
+                      ],
+                    ),
+                  )
+                )
+              ),
+            )
           )
         )
       )      
@@ -291,7 +301,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     List<dynamic> subscriptions = jsonDecode(response.body);
-    var subs = Subscriptions.fromJson(subscriptions);
+    Subscriptions subs = Subscriptions.fromJson(subscriptions);
 
     Navigator.pushReplacementNamed(context, '/main', arguments: {"user": user, "subs": subs});
   }

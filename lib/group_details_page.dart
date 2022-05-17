@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
-import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
@@ -14,8 +12,6 @@ import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
-
-import 'package:http/http.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   const GroupDetailsPage({Key? key}) : super(key: key);
@@ -28,7 +24,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   Map _receivedData = {};
 
   final double _maxHeight = 200;
-  final double _triggerVelocity = 250000; // Squared
   late double _middleHeight;
   late double _currHeight;
   double _refHeight = 0;
@@ -46,7 +41,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   bool _blocked = true;
   bool _unqualified = false;
 
-  List<Post> _postList = [];
+  List<Post> _posts = [];
 
   bool _loaded = false;
 
@@ -87,7 +82,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         }
       });
     });
-
     super.initState();
   }
 
@@ -106,13 +100,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       else {
         dynamic jsonArray = jsonDecode(response.body);
         
-        List<Post> postList = [];
+        List<Post> posts = [];
         for (var json in jsonArray) {
-          postList.add(Post.fromJson(json));
+          posts.add(Post.fromJson(json));
         }
         
         setState(() {
-          _postList = postList;
+          _posts = posts;
           _loaded = true;
         });
       }
@@ -159,6 +153,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     if (!_blocked) {
       getPostList();   
     }
+
+    final double deviceWidth = MediaQuery.of(context).size.width;
     
     return MaterialApp(
       home: Scaffold(
@@ -188,7 +184,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                             height: 30
                           ),
                           postList(
-                            width: _deviceWidth,
+                            width: deviceWidth, 
                             height: 180
                           )
                         ],
@@ -326,7 +322,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   }
 
   Widget gestureBar({
-      required double height}) {
+      required double height}) {      
     return GestureDetector(
       onVerticalDragStart: (details) {
         _prevY = details.globalPosition.dy;
@@ -340,8 +336,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       },
       onVerticalDragEnd: (details) {
         _refHeight = _currHeight;
-        var dy = details.velocity.pixelsPerSecond.dy;
-        if (dy * dy > _triggerVelocity) {
+        double dy = details.velocity.pixelsPerSecond.dy;
+        double abs_dy = dy;
+        if (abs_dy < 0) abs_dy *= -1;
+        if (abs_dy > globals.GestureBarTriggerSpeed) {
           if (dy > 0) {
             _targetHeight = _maxHeight;
           }
@@ -357,6 +355,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             _targetHeight = 0;
           }
         }
+        double speed = math.min(abs_dy, globals.GestureBarMaxSpeed);
+        double coeiff = (globals.GestureBarMaxSpeed - speed) / globals.GestureBarMaxSpeed;
+        int msec = math.max(globals.BasicAnimDuration * coeiff, 1).toInt();
+        _controller.duration = Duration(milliseconds: msec);
         _controller.reset();
         _controller.forward();
       }, 
@@ -406,13 +408,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             child: Container(
               child: _blocked ? lockWidget :
               _loaded ? createPostListView(
-                posts: _postList, 
+                posts: _posts, 
                 onTab: (index) {
                   Navigator.pushNamed(
                     context, "/post",
                     arguments: {
                       "index": index,
-                      "post": _postList[index],
+                      "post": _posts[index],
                     }
                   );
                 }, 

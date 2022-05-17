@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/group_list_view.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
-import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
@@ -27,7 +27,7 @@ class GroupListPage extends StatefulWidget {
 }
 
 class _GroupListPageState extends State<GroupListPage> {
-  List<Group> _groupList = [];
+  List<Group> _groups = [];
 
   final List<String> _dropDownMenuItemList = [
     "One", "Two", "Three", "Four"
@@ -50,16 +50,16 @@ class _GroupListPageState extends State<GroupListPage> {
       return;
     }
 
-    List<Group> groupList  = [];
+    List<Group> groups  = [];
 
     Map<String, dynamic> json = jsonDecode(response.body);
     List<dynamic> teamJsonArray = json["teams"];
     for (var teamJson in teamJsonArray) {
-      groupList.add(Group.fromJson(teamJson));
+      groups.add(Group.fromJson(teamJson));
     }
 
     setState(() {
-      _groupList = groupList;
+      _groups = groups;
       _loaded = true;
     });
   }
@@ -91,13 +91,13 @@ class _GroupListPageState extends State<GroupListPage> {
 
   @override
   Widget build(BuildContext _) {
-    const double margin = 5;
-    const double padding = 10;
+    const EdgeInsets margin = EdgeInsets.all(5);
+    const EdgeInsets padding = EdgeInsets.all(10);
     const double imageBoxSize = 40;
     const double containerHeight = 70;
 
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double actualWidth = deviceWidth - padding - padding;
+    final double actualWidth = deviceWidth - padding.left - padding.right;
     final double postDescWidth = actualWidth - imageBoxSize;
 
     return Scaffold(
@@ -114,119 +114,34 @@ class _GroupListPageState extends State<GroupListPage> {
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)
             ),
             Expanded(
-              child: _loaded ? groupList(
+              child: _loaded ? createGroupListView(
+                groups: _groups,
+                onTab: (index) {
+                  if(_searchBarFocusNode.hasFocus) {
+                    SearchBarLostedFocus();
+                  }
+                  Navigator.pushNamed(
+                    widget.context, "/group_details",
+                    arguments: { 
+                      "index": index,
+                      "user": widget.user,
+                      "subs": widget.subs,
+                      "group": _groups[index]
+                    }
+                  );
+                },
                 width: postDescWidth,
                 height: containerHeight, 
-                margin: const EdgeInsets.all(margin), 
-                padding: const EdgeInsets.all(padding)) : loading()
+                tagsHeight: 20, 
+                imageSize: 40,
+                margin: margin,
+                padding: padding,
+                descPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
+              ) : loading()
             )
           ]
         )
       )
-    );
-  }
-
-  Widget groupList({
-      required double width,
-      required double height,
-      required EdgeInsets margin,
-      required EdgeInsets padding}) {
-    const EdgeInsets descPadding = EdgeInsets.fromLTRB(15, 0, 15, 0);
-    const double tagsHeight = 20;
-    const double imageSize = 40;
-
-    final double actualWidth = width - margin.left - margin.right - padding.left - padding.right - 
-                                descPadding.left - descPadding.right - imageSize;
-    final double titleHeight = height - tagsHeight - padding.top - padding.bottom;
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
-      itemCount: _groupList.length,
-      itemBuilder: (_, index) {
-        return GestureDetector(
-          onTap: () {
-            if(_searchBarFocusNode.hasFocus) {
-              SearchBarLostedFocus();
-            }
-            Navigator.pushNamed(
-              widget.context, "/group_details",
-              arguments: { 
-                "index": index,
-                "user": widget.user,
-                "subs": widget.subs,
-                "group": _groupList[index]
-              }
-            );
-          },
-          child: Container(
-            height: height,
-            margin: margin,
-            padding: padding,
-            decoration: BoxDecoration(
-              color: globals.IdentityColor,
-              borderRadius: globals.DefaultRadius
-            ),
-            child: Row(
-              children: [
-                // Profile
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Hero(
-                      tag: "group_" + index.toString(), 
-                      child: Container(
-                        width: imageSize,
-                        height: imageSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                           image: AssetImage(_groupList[index].filePath)
-                          )
-                        )
-                      )
-                    )
-                  ],
-                ),
-                // Descriptions
-                Padding(
-                  padding: descPadding,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: actualWidth,
-                        height: titleHeight,
-                        child: Row(                        
-                          children: [
-                            Text(
-                              _groupList[index].name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: globals.FocusedForeground
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _groupList[index].hostId.toString(),
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: globals.FocusedForeground
-                              ),
-                            ),
-                          ],
-                        )
-                      ),
-                      TagList(width: actualWidth, height: tagsHeight, tagList: _groupList[index].tags)          
-                    ],
-                  )
-                ),
-              ],
-            )
-          ),
-        );
-      },
     );
   }
 }

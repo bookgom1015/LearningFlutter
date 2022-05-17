@@ -1,71 +1,115 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/group_list_view.dart';
 import 'package:flutter_application_learning/entries/account.dart';
 import 'package:flutter_application_learning/entries/menu.dart';
+import 'package:flutter_application_learning/entries/subscriptions.dart';
+import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
 class MyPage extends StatefulWidget {
-  const MyPage({Key? key}) : super(key: key);
+  final User user;
+  final Subscriptions subs;
+  final BuildContext context;
+  final PageController pageController;
+
+  const MyPage({
+    Key? key,
+    required this.user,
+    required this.subs,
+    required this.context, 
+    required this.pageController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _MyPageState();
 }
 
-class _MyPageState extends State<MyPage> {
-  final List<Menu> _menuList = [
-    Menu(Icons.info_outline, "Menu 1"),
-    Menu(Icons.info_outline, "Menu 2"),
-    Menu(Icons.info_outline, "Menu 3"),
-    Menu(Icons.info_outline, "Menu 4"),
-    Menu(Icons.info_outline, "Menu 5"),
-    Menu(Icons.info_outline, "Menu 6"),
-    Menu(Icons.info_outline, "Menu 7"),
-    Menu(Icons.info_outline, "Menu 8"),
-    Menu(Icons.info_outline, "Menu 9"),
-    Menu(Icons.info_outline, "Menu 10"),    
-    Menu(Icons.info_outline, "Menu 11"),    
-    Menu(Icons.info_outline, "Menu 12"),    
-    Menu(Icons.info_outline, "Menu 13"),    
-    Menu(Icons.info_outline, "Menu 14"),    
-  ];
-
-  final Account _account = Account("assets/images/creeper_128x128.jpg", "KBG");
-
+class _MyPageState extends State<MyPage> {  
   @override
   Widget build(BuildContext context) {
+    const EdgeInsets margin = EdgeInsets.all(5);
+    const EdgeInsets padding = EdgeInsets.all(10);
+    const double imageBoxSize = 40;
+    const double containerHeight = 70;
+
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    final double actualWidth = deviceWidth - padding.left - padding.right;
+    final double postDescWidth = actualWidth - imageBoxSize;
+
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(               
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 0), 
-        child: ListView.builder(
-          padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
-          itemCount: _menuList.length,
-          itemBuilder: (context, index) {
-            return Container(
-              height: 50,
-              margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+        child: Column(
+          children: [
+            Container(              
+              height: 200,
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,
                 borderRadius: globals.DefaultRadius
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  const SizedBox(width: 10),
-                  Icon(
-                    _menuList[index].icon,
-                    color: globals.FocusedForeground,
+                  Row(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: AssetImage(widget.user.userProfile.filePath)
+                          )
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.user.userName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold
+                            )
+                          ),
+                          const Text("E-mail@email.com")
+                        ]
+                      )
+                    ]
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    _menuList[index].title,
-                    style: const TextStyle(
-                      color: globals.FocusedForeground
-                    ),
+                  Expanded(child: Container()),
+                  SizedBox(
+                    height: 30,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.settings),
+                        onPressed: () {
+                          print("pressed");
+                        },
+                      )
+                    )
                   )
-                ],
-              ),
-            );
-          }
-        ),
+                ]
+              )
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: createGroupListView(
+                groups: widget.subs.groups,
+                onTab: (index) {},
+                width: postDescWidth,
+                height: containerHeight,
+                tagsHeight: 20,
+                imageSize: 40,
+                margin: margin,
+                padding: padding,
+                descPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
+              )
+            )
+          ]
+        )
       ),
     );
   }  

@@ -24,7 +24,6 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
   String _desc = "";
 
   double _maxHeight = 140;
-  final double _triggerVelocity = 250000; // Squared
   late double _middleHeight;
   late double _currHeight;
   double _refHeight = 0;
@@ -318,8 +317,10 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
       },
       onVerticalDragEnd: (details) {
         _refHeight = _currHeight;
-        var dy = details.velocity.pixelsPerSecond.dy;
-        if (dy * dy > _triggerVelocity) {
+        double dy = details.velocity.pixelsPerSecond.dy;
+        double abs_dy = dy;
+        if (abs_dy < 0) abs_dy *= -1;
+        if (abs_dy > globals.GestureBarTriggerSpeed) {
           if (dy > 0) {
             _targetHeight = _maxHeight;
           }
@@ -335,6 +336,10 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
             _targetHeight = 0;
           }
         }
+        double speed = math.min(abs_dy, globals.GestureBarMaxSpeed);
+        double coeiff = (globals.GestureBarMaxSpeed - speed) / globals.GestureBarMaxSpeed;
+        int msec = math.max(globals.BasicAnimDuration * coeiff, 1).toInt();
+        _controller.duration = Duration(milliseconds: msec);
         _controller.reset();
         _controller.forward();
       },

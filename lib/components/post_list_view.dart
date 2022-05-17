@@ -5,19 +5,18 @@ import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
 Widget createPostListView({
-  required List<Post> posts,
-  required void Function(int) onTab,
-  required double height,
-  required double titleHeight,
-  required double imageSize,
-  required double tagsWidth,
-  required double tagsHeight,
-  int maxLines = 1,
-  EdgeInsets margin = EdgeInsets.zero,
-  EdgeInsets padding = EdgeInsets.zero,
-  double bottomPadding = 0,
-  double titleFontSize = 15,
-}) {
+    required List<Post> posts,
+    required void Function(int) onTab,
+    required double height,
+    required double titleHeight,
+    required double imageSize,
+    required double tagsWidth,
+    required double tagsHeight,
+    int maxLines = 1,
+    EdgeInsets margin = EdgeInsets.zero,
+    EdgeInsets padding = EdgeInsets.zero,
+    double bottomPadding = 0,
+    double titleFontSize = 15}) {
   return ListView.builder(
     padding: EdgeInsets.only(bottom: bottomPadding),
     itemCount: posts.length,
