@@ -26,7 +26,7 @@ class MyPage extends StatefulWidget {
 class _MyPageState extends State<MyPage> {  
   @override
   Widget build(BuildContext context) {
-    const EdgeInsets margin = EdgeInsets.all(5);
+    const EdgeInsets margin = EdgeInsets.fromLTRB(10, 5, 10, 5);
     const EdgeInsets padding = EdgeInsets.all(10);
     const double imageBoxSize = 40;
     const double containerHeight = 70;
@@ -38,11 +38,12 @@ class _MyPageState extends State<MyPage> {
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(               
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 0), 
+        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0), 
         child: Column(
           children: [
             Container(              
               height: 200,
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: globals.IdentityColor,

@@ -91,7 +91,7 @@ class _GroupListPageState extends State<GroupListPage> {
 
   @override
   Widget build(BuildContext _) {
-    const EdgeInsets margin = EdgeInsets.all(5);
+    const EdgeInsets margin = EdgeInsets.fromLTRB(10, 5, 10, 5);
     const EdgeInsets padding = EdgeInsets.all(10);
     const double imageBoxSize = 40;
     const double containerHeight = 70;
