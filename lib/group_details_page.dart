@@ -85,7 +85,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     super.initState();
   }
 
-  void getPostList() async {
+  void getPosts() async {
     StringBuffer uri = StringBuffer();
       uri.write(globals.SpringUriPath);
       uri.write("/api/team/");
@@ -151,14 +151,18 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     if (!_blocked) {
-      getPostList();   
+      getPosts();   
     }
 
     final double deviceWidth = MediaQuery.of(context).size.width;
     
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(navTitle: _group.name),
+        appBar: createAppBar(
+          height: globals.AppBarHeight,
+          title: _group.name,
+          backgroundColor: globals.AppBarColor
+        ),
         body: Container(
           decoration: const BoxDecoration(
             color: globals.BackgroundColor
@@ -174,16 +178,17 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          descBox(
+                          descriptionsAndButtonsWidget(
                             width: _deviceWidth, 
                             height: _maxHeight,
                             tag: "group_" + _receivedData['index'].toString()
                           ),
-                          const SizedBox(height: 5),
-                          gestureBar(
+                          const SizedBox(height: 10),
+                          gestureBarWidget(
+                            width: deviceWidth,
                             height: 30
                           ),
-                          postList(
+                          postsWidget(
                             width: deviceWidth, 
                             height: 180
                           )
@@ -193,12 +198,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                   )
                 )
               ),
-              addPostBtn(
-                bottom: 30, 
-                right: 30,
-                size: 64,
-                iconSize: 50
-              )
+              addPostButtonWidget()
             ]
           )
         )
@@ -206,7 +206,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget descBox({
+  Widget descriptionsAndButtonsWidget({
       required double width,
       required double height,
       required String tag}) {
@@ -223,13 +223,33 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
               height: height,
               child: Row(
                 children: [
+                  // Descriptions
                   Expanded(
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: globals.IdentityColor,
-                        borderRadius: globals.DefaultRadius
+                        gradient: const LinearGradient(
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                          stops: [
+                            0.0,
+                            0.5
+                          ],
+                          colors: [
+                            globals.ListViewItemBackgroundColors1,
+                            globals.ListViewItemBackgroundColors2,
+                          ]
+                        ),
+                        borderRadius: globals.DefaultRadius,
+                        boxShadow: const [
+                          BoxShadow(
+                            color: globals.ShadowColor,
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: Offset(6, 8)
+                          )
+                        ]
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -275,12 +295,32 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                       ),
                     )
                   ),
+                  // Buttons
                   Container(
                     width: 60,
                     margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                     decoration: BoxDecoration(
-                      color: globals.IdentityColor,
-                      borderRadius: globals.DefaultRadius
+                      gradient: const LinearGradient(
+                        begin: Alignment.bottomRight,
+                        end: Alignment.topLeft,
+                        stops: [
+                          0.0,
+                          0.5
+                        ],
+                        colors: [
+                          globals.ListViewItemBackgroundColors1,
+                          globals.ListViewItemBackgroundColors2,
+                        ]
+                      ),
+                      borderRadius: globals.DefaultRadius,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: globals.ShadowColor,
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                          offset: Offset(6, 8)
+                        )
+                      ]
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -321,7 +361,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget gestureBar({
+  Widget gestureBarWidget({
+      required double width,
       required double height}) {      
     return GestureDetector(
       onVerticalDragStart: (details) {
@@ -363,6 +404,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         _controller.forward();
       }, 
       child: Container(
+        width: width,
         height: height,
         decoration: const BoxDecoration(
           color: Colors.transparent
@@ -372,7 +414,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget postList({
+  Widget postsWidget({
       required double width,
       required double height}) {
     Widget lockWidget = Row(
@@ -402,48 +444,56 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     final double actualWidth = width - margin - margin;
 
     return Expanded(
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              child: _blocked ? lockWidget :
-              _loaded ? createPostListView(
-                posts: _posts, 
-                onTab: (index) {
-                  Navigator.pushNamed(
-                    context, "/post",
-                    arguments: {
-                      "index": index,
-                      "post": _posts[index],
-                    }
-                  );
-                }, 
-                height: height, 
-                titleHeight: 40, 
-                imageSize: 40, 
-                tagsWidth: actualWidth, 
-                tagsHeight: 20,
-                maxLines: 3,
-                margin: const EdgeInsets.fromLTRB(margin, 5, margin, 5),
-                padding: const EdgeInsets.all(10),
-                bottomPadding: globals.ListViewBottomPadding,
-                titleFontSize: 18
-              ) : loading()
-            )
+      child: Stack(
+        children: [          
+          Container(
+            child: _blocked ? lockWidget :
+            _loaded ? createPostListView(
+              posts: _posts, 
+              onTab: (index) {
+                Navigator.pushNamed(
+                  context, "/post",
+                  arguments: {
+                    "index": index,
+                    "post": _posts[index],
+                  }
+                );
+              }, 
+              height: height, 
+              titleHeight: 40, 
+              imageSize: 40, 
+              tagsWidth: actualWidth, 
+              tagsHeight: 20,
+              maxLines: 3,
+              margin: const EdgeInsets.fromLTRB(margin, 5, margin, 5),
+              padding: const EdgeInsets.all(10),
+              viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110),
+              titleFontSize: 18
+            ) : loading()
+          ),
+          Container(
+            width: width,
+            height: 30,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  globals.BackgroundColor,
+                  Color.fromARGB(0, 233, 232, 232),
+                ]
+              )
+            ),
           )
-        ],
+        ]
       )
     );
   }
 
-  Widget addPostBtn({
-      required double bottom,
-      required double right,
-      required double size,
-      required double iconSize}) {
+  Widget addPostButtonWidget() {
     return Positioned(
-      bottom: bottom,
-      right: right,
+      bottom: 30,
+      right: 30,
       child: GestureDetector(
         onTap: () {
           if (_blocked) return;          
@@ -489,17 +539,18 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           );
         },
         child: Container(
-          width: size,
-          height: size,
+          width: 64,
+          height: 64,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: globals.IdentityColor,
+            color: globals.AddPostButtonColor,
             boxShadow: [          
               BoxShadow(
                 color: globals.ShadowColor,
-                spreadRadius: 4,
-                blurRadius: 8,
-              )
+                spreadRadius: 2,
+                blurRadius: 16,
+                offset: Offset(4, 4)
+              ),
             ]
           ),
           child: Transform.rotate(
@@ -507,7 +558,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             child: Icon(
               Icons.add,
               color: _blocked ? globals.UnfocusedForeground : globals.FocusedForeground,
-              size: iconSize
+              size: 50
             )
           )
         )

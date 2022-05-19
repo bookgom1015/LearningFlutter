@@ -24,7 +24,11 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(navTitle: "회원가입"),
+        appBar: createAppBar(
+          height: globals.AppBarHeight,
+          title: "회원가입",
+          backgroundColor: globals.AppBarColor
+        ),
         body: Container(
           padding: const EdgeInsets.fromLTRB(15, 60, 15, 0),
           decoration: const BoxDecoration(

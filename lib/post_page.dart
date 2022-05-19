@@ -81,7 +81,11 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
 
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(navTitle: _post.title),
+        appBar: createAppBar(
+          height: globals.AppBarHeight,
+          title: _post.title,
+          backgroundColor: globals.AppBarColor
+        ),
         body: AnimatedBuilder(
           animation: _controller,
           builder: (BuildContext context, _) { 
@@ -93,12 +97,12 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      child: ContentPartial(viewHeight)
+                      child: contentWidget(viewHeight)
                     )
                   ),
                   SizedBox(
                     height: _shrinkeddHeight + _heightAnimation.value * (extendedHeight - _shrinkeddHeight),
-                    child: repliesPartial(deviceWidth)
+                    child: repliesWidget(deviceWidth)
                   )
                 ]
               )
@@ -110,19 +114,39 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
   }
 
   // ignore: non_constant_identifier_names
-  Widget ContentPartial(double viewHeight) {      
+  Widget contentWidget(double viewHeight) {      
     return Container(
       margin: const EdgeInsets.all(10),
       constraints: BoxConstraints(
         minHeight: viewHeight - 20 // to exclude margin
       ),
       decoration: BoxDecoration(
-        color: globals.IdentityColor,
-        borderRadius: globals.DefaultRadius
+        gradient: const LinearGradient(
+          begin: Alignment.bottomRight,
+          end: Alignment.topLeft,
+          stops: [
+            0.0,
+            0.5
+          ],
+          colors: [
+            globals.ContentBackgroundColors1,
+            globals.ContentBackgroundColors2,
+          ]
+        ),
+        borderRadius: globals.DefaultRadius,
+        boxShadow: const [
+          BoxShadow(
+            color: globals.ShadowColor,
+            blurRadius: 12,
+            spreadRadius: 1,
+            offset: Offset(6, 8)
+          )
+        ]
       ),
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image and host
             Row(
@@ -154,19 +178,13 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
               children: [
                 Container(
                   padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
-                  decoration: BoxDecoration(
-                    color: globals.IdentityColorLayer1,
-                    borderRadius: globals.DefaultRadius
-                  ),
-                  child: Center(
-                    child: Text(
-                      _post.desc,
-                      maxLines: null,
-                      style: const TextStyle(
-                        color: globals.FocusedForeground
-                      ),
+                  child: Text(
+                    _post.desc,
+                    maxLines: null,
+                    style: const TextStyle(
+                      color: globals.FocusedForeground
                     ),
-                  ),
+                  )
                 ),                      
               ],
             )
@@ -176,16 +194,27 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget repliesPartial(double width) {
+  Widget repliesWidget(double width) {
     return Container(
       decoration: const BoxDecoration(
-        color: globals.IdentityColor,
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          stops: [
+            0.1,
+            0.3
+          ],
+          colors: [
+            globals.RepliesBackgroundColors1,
+            globals.RepliesBackgroundColors2,
+          ]
+        ),
         boxShadow: [
           BoxShadow(
             color: globals.ShadowColor,
             spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 0)
+            blurRadius: 16,
+            offset: Offset(0, -4)
           )
         ]
       ),
@@ -196,7 +225,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
             children: [
               Container(
                 decoration: const BoxDecoration(
-                  color: globals.IdentityColor,                                  
+                  color: Colors.transparent,                                  
                 ),
                 width: width,
                 height: _shrinkeddHeight,
@@ -221,53 +250,92 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
             ],
           ),
           Expanded(
-            child:  ListView.builder(
-              itemCount: _replies.length,
-              itemBuilder: (_, index) {
-                return Container(
-                  margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                  child: Row(
-                    children: [
-                      Column(
+            child: Stack(
+              children: [
+                ListView.builder(
+                  padding: const EdgeInsets.only(top: 20),
+                  itemCount: _replies.length,
+                  itemBuilder: (_, index) {
+                    return Container(
+                      margin: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                          stops: [
+                            0.0,
+                            0.5
+                          ],
+                          colors: [
+                            globals.RepliesListViewItemBackgroundColors1,
+                            globals.RepliesListViewItemBackgroundColors2,
+                          ]
+                        ),
+                        borderRadius: globals.DefaultRadius,
+                        boxShadow: const [
+                          BoxShadow(
+                            color: globals.ShadowColor,
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: Offset(6, 8)
+                          )
+                        ]
+                      ),
+                      child: Row(
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(20)),
-                              image: DecorationImage(
-                                image: AssetImage(_replies[index].image),
+                          Column(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                                  image: DecorationImage(
+                                    image: AssetImage(_replies[index].image),
+                                  )
+                                )
+                              ),
+                              Text(
+                                _replies[index].name,
+                                style: const TextStyle(
+                                  color: globals.FocusedForeground
+                                )
                               )
-                            )
+                            ],
                           ),
-                          Text(
-                            _replies[index].name,
-                            style: const TextStyle(
-                              color: globals.FocusedForeground
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),
+                              child: Text(
+                                _replies[index].text,
+                                style: const TextStyle(
+                                  color: globals.FocusedForeground
+                                ),
+                              ),
                             )
                           )
                         ],
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),
-                          decoration: BoxDecoration(
-                            color: globals.IdentityColorLayer1,
-                            borderRadius: globals.DefaultRadius                                    
-                          ),
-                          child: Text(
-                            _replies[index].text,
-                            style: const TextStyle(
-                              color: globals.FocusedForeground
-                            ),
-                          ),
-                        )
-                      )
-                    ],
-                  ),
-                );
-              }
+                    );
+                  }
+                ),
+                Container(
+                  width: width,
+                  height: 30,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        globals.RepliesBackgroundColors2,
+                        Color.fromARGB(0, 233, 232, 232),
+                      ]
+                    )
+                  )
+                )
+              ],
             )
           )
         ],

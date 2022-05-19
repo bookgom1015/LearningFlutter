@@ -54,13 +54,18 @@ class _LoginPageState extends State<LoginPage> {
 
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(navTitle: "로그인"),
+        appBar: createAppBar(
+          height: globals.AppBarHeight,
+          title: "로그인",
+          backgroundColor: globals.AppBarColor
+        ),
         body: SingleChildScrollView(
           child: Container(
             width: deviceWidth,
             height: deviceHeight,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
+              color: globals.BackgroundColor
               //image: DecorationImage(
               //  image: AssetImage('assets/images/8k_wallpaper.jpg'),
               //  fit: BoxFit.fill

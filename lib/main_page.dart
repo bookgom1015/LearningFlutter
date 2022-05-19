@@ -11,6 +11,19 @@ import 'package:flutter_application_learning/entries/tab_btn_model.dart';
 import 'package:flutter_application_learning/globals.dart' as globals;
 
 class MainPage extends StatefulWidget {
+  static const double TabButtonMaxSize = 52;
+  static const double TabButtonMinSize = 36;
+  static const double TabButtonIconMaxSize = 36;
+  static const double TabButtonIconMinSize = 24;
+
+  static const List<IconData> TabButtonIcons = [
+    Icons.list,
+    Icons.group,
+    Icons.manage_accounts
+  ];
+
+  static const List<String> TitleList = ["공개글 목록", "팀 목록", "마이페이지"];
+
   const MainPage({Key? key}) : super(key: key);
 
   @override
@@ -21,20 +34,12 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   Map _receivedData = {};
   
   late PageController _pageController;
-
-  final List<String> _titleList = ["공개글 목록", "팀 목록", "마이페이지"];
   late String _title;
-
-  final List<IconData> _icons = [
-    Icons.list,
-    Icons.group,
-    Icons.manage_accounts
-  ];
 
   @override
   void initState() {
     _pageController = PageController();
-    _title = _titleList[0];
+    _title = MainPage.TitleList[0];
     
     super.initState();
   }
@@ -60,7 +65,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 
     return MaterialApp(
       home: ChangeNotifierProvider(
-        create: (context) => TabButtonModel(),
+        create: (context) => TabButtonModel(maxSize: MainPage.TabButtonMaxSize),
         child: DefaultTabController(
           length: globals.TabSize,
           child: Consumer<TabButtonModel>(
@@ -68,16 +73,17 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
               return Scaffold(
                 extendBody: true,
                 appBar: AppBar(
-                  backgroundColor: globals.IdentityColor,
-                  elevation: 8,
+                  backgroundColor: globals.AppBarColor,
+                  elevation: 0,
                   title: TitleFadeInAnim(
                     title: _title,
                     model: model
                   ),
                 ),
-                bottomNavigationBar: bottomNavBar(
+                bottomNavigationBar: navBarWidget(
                   model: model,
-                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  height: 70,
+                  margin: const EdgeInsets.fromLTRB(5, 0, 5, 10),
                   padding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
                 ),
                 body: PageView.builder(
@@ -85,7 +91,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   onPageChanged: (index) { 
                     if (!model.isTapped) {
                       setState(() {
-                        _title = _titleList[index];
+                        _title = MainPage.TitleList[index];
                       });
                       model.updateIndex(index);
                     }
@@ -106,23 +112,31 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget bottomNavBar({
+  Widget navBarWidget({
       required TabButtonModel model,
+      required double height,
       EdgeInsets margin = EdgeInsets.zero,
       EdgeInsets padding = EdgeInsets.zero}) {
 
     return SizedBox(
-      height: globals.NavBarHeight + margin.bottom,
+      height: height + margin.bottom,
       child: Container(
         margin: margin,
         decoration: BoxDecoration(
-          color: globals.IdentityColor,          
-          borderRadius: BorderRadius.circular(50),
-          boxShadow: const [          
+          borderRadius: BorderRadius.circular(height * 0.5),
+          gradient: const RadialGradient(
+            center: Alignment.center,
+            radius: 3,
+            colors: [
+              globals.NavBarColors1,
+              globals.NavBarColors2,
+            ]
+          ),
+          boxShadow: const [
             BoxShadow(
               color: globals.ShadowColor,
-              spreadRadius: 4,
-              blurRadius: 8,
+              blurRadius: 16,
+              spreadRadius: 2
             )
           ]
         ),
@@ -136,12 +150,21 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                 child: TabButtonAnim(
                   model: model,
                   index: index,
+                  minSize: MainPage.TabButtonMinSize,
+                  maxSize: MainPage.TabButtonMaxSize,
+                  minIconSize: MainPage.TabButtonIconMinSize,
+                  maxIconSize: MainPage.TabButtonIconMaxSize,
+                  fromColor: globals.TabButtonUnfocusedColor,
+                  toColor: globals.TabButtonFocusedColor,
+                  fromIconColor: globals.UnfocusedForeground,
+                  toIconColor: globals.FocusedForeground,
+                  animDuration: globals.BasicAnimDuration,
                   callback: () {
                     if (model.index == index) {
                       return;
                     }
                     setState(() {
-                      _title = _titleList[index];
+                      _title = MainPage.TitleList[index];
                     });
                     model.isTapped = true;
                     model.updateIndex(index);
@@ -153,7 +176,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                       curve: Curves.easeInQuart,
                     );
                   },
-                  icons: _icons
+                  icons: MainPage.TabButtonIcons
                 ),
               );
             }

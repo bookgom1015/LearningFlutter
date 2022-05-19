@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
 
-AppBar createAppBar({required String navTitle, double? btnSize, List<AppBarBtn>? btnList}) {
+AppBar createAppBar({
+    required double height,
+    required String title,
+    Color backgroundColor = Colors.white,
+    Color fontColor = Colors.black,
+    double? btnSize,
+    List<AppBarBtn>? btnList}) {
   return AppBar(
-    toolbarHeight: globals.AppBarHeight,
+    toolbarHeight: height,
+    elevation: 0,
     title: Row(
       children: [
         SizedBox(
@@ -12,11 +18,11 @@ AppBar createAppBar({required String navTitle, double? btnSize, List<AppBarBtn>?
           child: Stack(
             children: <Widget>[              
               Text(
-                navTitle,
-                style: const TextStyle(
+                title,
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: globals.FocusedForeground, // <-- Inner color
+                  color: fontColor , // <-- Inner color
                 ),
               ),
             ],
@@ -28,7 +34,7 @@ AppBar createAppBar({required String navTitle, double? btnSize, List<AppBarBtn>?
             children: [
               SizedBox(
                 width: (btnSize ?? 0) * (btnList == null ? 0 : 1),
-                height: globals.AppBarHeight,
+                height: height,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: btnList == null ? 0 : 1,
@@ -50,6 +56,6 @@ AppBar createAppBar({required String navTitle, double? btnSize, List<AppBarBtn>?
         )
       ]
     ),
-    backgroundColor: globals.IdentityColor,
+    backgroundColor: backgroundColor,
   );
 }

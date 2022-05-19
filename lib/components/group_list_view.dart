@@ -12,13 +12,14 @@ Widget createGroupListView({
     required double imageSize,
     EdgeInsets margin = EdgeInsets.zero,
     EdgeInsets padding = EdgeInsets.zero,
-    EdgeInsets descPadding = EdgeInsets.zero,}) {
+    EdgeInsets descPadding = EdgeInsets.zero,
+    EdgeInsets viewItemPadding = EdgeInsets.zero,}) {
   final double actualWidth = width - margin.left - margin.right - padding.left - padding.right - 
                                 descPadding.left - descPadding.right - imageSize;
   final double titleHeight = height - tagsHeight - padding.top - padding.bottom;
     
   return ListView.builder(
-    padding: const EdgeInsets.only(bottom: globals.ListViewBottomPadding),
+    padding: viewItemPadding,
     itemCount: groups.length,
     itemBuilder: (_, index) {
       return GestureDetector(
@@ -30,8 +31,27 @@ Widget createGroupListView({
           margin: margin,
           padding: padding,
           decoration: BoxDecoration(
-            color: globals.IdentityColor,
-            borderRadius: globals.DefaultRadius
+            gradient: const LinearGradient(
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
+              stops: [
+                0.0,
+                0.5
+              ],
+              colors: [
+                globals.ListViewItemBackgroundColors1,
+                globals.ListViewItemBackgroundColors2,
+              ]
+            ),
+            borderRadius: globals.DefaultRadius,
+            boxShadow: const [
+              BoxShadow(
+                color: globals.ShadowColor,
+                blurRadius: 12,
+                spreadRadius: 1,
+                offset: Offset(6, 8)
+              )
+            ]
           ),
           child: Row(
             children: [
@@ -85,7 +105,14 @@ Widget createGroupListView({
                         ],
                       )
                     ),
-                    TagList(width: actualWidth, height: tagsHeight, tagList: groups[index].tags)          
+                    TagList(
+                      width: actualWidth,
+                      height: tagsHeight,
+                      tags: groups[index].tags,
+                      fontColor: globals.FocusedForeground,
+                      backgroundColor: globals.TagBackgroundColor,
+                      shadowColor: globals.ShadowColor
+                    )          
                   ],
                 )
               ),

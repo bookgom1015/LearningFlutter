@@ -15,10 +15,10 @@ Widget createPostListView({
     int maxLines = 1,
     EdgeInsets margin = EdgeInsets.zero,
     EdgeInsets padding = EdgeInsets.zero,
-    double bottomPadding = 0,
+    EdgeInsets viewItemPadding = EdgeInsets.zero,
     double titleFontSize = 15}) {
   return ListView.builder(
-    padding: EdgeInsets.only(bottom: bottomPadding),
+    padding: viewItemPadding,
     itemCount: posts.length,
     itemBuilder: (_, index) {
       return GestureDetector(
@@ -29,8 +29,27 @@ Widget createPostListView({
           height: height,
           margin: margin,
           decoration: BoxDecoration(
-            color: globals.IdentityColor,
+            gradient: const LinearGradient(
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
+              stops: [
+                0.0,
+                0.5
+              ],
+              colors: [
+                globals.ListViewItemBackgroundColors1,
+                globals.ListViewItemBackgroundColors2,
+              ]
+            ),
             borderRadius: globals.DefaultRadius,
+            boxShadow: const [
+              BoxShadow(
+                color: globals.ShadowColor,
+                blurRadius: 12,
+                spreadRadius: 1,
+                offset: Offset(6, 8)
+              )
+            ]
           ),
           child: Padding(
             padding: padding,
@@ -39,7 +58,14 @@ Widget createPostListView({
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Tags
-                TagList(width: tagsWidth, height: tagsHeight, tagList: posts[index].tags),
+                TagList(
+                  width: tagsWidth, 
+                  height: tagsHeight, 
+                  tags: posts[index].tags,
+                  fontColor: globals.FocusedForeground,
+                  backgroundColor: globals.TagBackgroundColor,
+                  shadowColor: globals.ShadowColor
+                ),
                 // Title
                 SizedBox(
                   height: titleHeight,

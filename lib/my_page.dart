@@ -46,8 +46,27 @@ class _MyPageState extends State<MyPage> {
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: globals.IdentityColor,
-                borderRadius: globals.DefaultRadius
+                gradient: const LinearGradient(
+                  begin: Alignment.bottomRight,
+                  end: Alignment.topLeft,
+                  stops: [
+                    0.0,
+                    0.5
+                  ],
+                  colors: [
+                    globals.ListViewItemBackgroundColors1,
+                    globals.ListViewItemBackgroundColors2,
+                  ]
+                ),
+                borderRadius: globals.DefaultRadius,
+                boxShadow: const [
+                  BoxShadow(
+                    color: globals.ShadowColor,
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                    offset: Offset(6, 8)
+                  )
+                ]
               ),
               child: Column(
                 children: [

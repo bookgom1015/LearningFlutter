@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
 
 class TagList extends StatelessWidget {
   final double width;
   final double height;
-  final List<String> tagList;
+  final List<String> tags;
+  final Color fontColor;
+  final Color backgroundColor;
+  final Color shadowColor;
 
-  const TagList({Key? key, required this.width, required this.height, required this.tagList}) : super(key: key);
+  const TagList({
+    Key? key, 
+    required this.width, 
+    required this.height, 
+    required this.tags,
+    required this.fontColor,
+    required this.backgroundColor,
+    required this.shadowColor}) : super(key: key);
 
   Size calcTextSize(String text, TextStyle style) {
     final TextPainter textPainter = TextPainter(
@@ -24,8 +33,8 @@ class TagList extends StatelessWidget {
     double extraSpace = margin + padding + padding;
     double accum = 0;
 
-    var textStyle = const TextStyle(
-      color: globals.TagForeground,
+    var textStyle = TextStyle(
+      color: fontColor,
       fontSize: 12,
       fontWeight: FontWeight.bold
     );
@@ -39,9 +48,9 @@ class TagList extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: tagList.length,
+            itemCount: tags.length,
             itemBuilder: (_, tagIndex) {
-              String tagText = tagList[tagIndex];
+              String tagText = tags[tagIndex];
               double textWidth = calcTextSize(tagText, textStyle).width + extraSpace;
 
               accum += textWidth;
@@ -49,8 +58,8 @@ class TagList extends StatelessWidget {
                 return const SizedBox(width: 0, height: 0);
               }
 
-              if ((tagIndex + 1) < tagList.length) {
-                String nextTagText = tagList[tagIndex + 1];
+              if ((tagIndex + 1) < tags.length) {
+                String nextTagText = tags[tagIndex + 1];
                 // ignore: non_constant_identifier_names
                 double NextTextWidth = calcTextSize(nextTagText, textStyle).width + extraSpace;
                 if ((accum + NextTextWidth) > width) {
@@ -62,8 +71,16 @@ class TagList extends StatelessWidget {
                 margin: const EdgeInsets.only(right: margin),
                 padding: const EdgeInsets.fromLTRB(padding, 0, padding, 0),
                 decoration: BoxDecoration(
-                  color: globals.IdentityColorLayer1,
-                  borderRadius: BorderRadius.circular(5)
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                      offset: const Offset(2, 2)
+                    )
+                  ]
                 ),
                 child: Center(
                   child: Text(

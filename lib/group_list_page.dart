@@ -91,26 +91,19 @@ class _GroupListPageState extends State<GroupListPage> {
 
   @override
   Widget build(BuildContext _) {
-    const EdgeInsets margin = EdgeInsets.fromLTRB(10, 5, 10, 5);
-    const EdgeInsets padding = EdgeInsets.all(10);
-    const double imageBoxSize = 40;
-    const double containerHeight = 70;
-
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double actualWidth = deviceWidth - padding.left - padding.right;
-    final double postDescWidth = actualWidth - imageBoxSize;
 
     return Scaffold(
-      backgroundColor: globals.BackgroundColor,
       body: Container(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        decoration: const BoxDecoration(
+          color: globals.BackgroundColor
+        ),
         child: Column(
           children: [
             SearchBar(
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
               dropDownMenuItemList: _dropDownMenuItemList,
-              margin: const EdgeInsets.only(bottom: 15),
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)
             ),
             Expanded(
@@ -130,13 +123,14 @@ class _GroupListPageState extends State<GroupListPage> {
                     }
                   );
                 },
-                width: postDescWidth,
-                height: containerHeight, 
+                width: deviceWidth,
+                height: 70, 
                 tagsHeight: 20, 
                 imageSize: 40,
-                margin: margin,
-                padding: padding,
-                descPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
+                margin: const EdgeInsets.fromLTRB(10, 0, 10, 20),
+                padding: const EdgeInsets.all(10),
+                descPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+                viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110)
               ) : loading()
             )
           ]

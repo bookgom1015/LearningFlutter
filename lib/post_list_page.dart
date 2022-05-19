@@ -90,15 +90,10 @@ class _PostListPageState extends State<PostListPage> {
   
   @override
   Widget build(BuildContext context) {
-    const double padding = 15;
-    const double innerPadding = 10;
-
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double actualWidth = deviceWidth - padding - padding;
 
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         decoration: const BoxDecoration(
           color: globals.BackgroundColor
         ),
@@ -108,7 +103,6 @@ class _PostListPageState extends State<PostListPage> {
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
               dropDownMenuItemList: _dropDownMenuItemList,
-              margin: const EdgeInsets.only(bottom: 15),
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)
             ),
             Expanded(
@@ -130,12 +124,12 @@ class _PostListPageState extends State<PostListPage> {
                 height: 180, 
                 titleHeight: 40, 
                 imageSize: 40, 
-                tagsWidth: actualWidth, 
+                tagsWidth: deviceWidth, 
                 tagsHeight: 20,
                 maxLines: 3,
-                margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                padding: const EdgeInsets.all(innerPadding),
-                bottomPadding: globals.ListViewBottomPadding,
+                margin: const EdgeInsets.fromLTRB(10, 0, 10, 20),
+                padding: const EdgeInsets.all(10),
+                viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110),
                 titleFontSize: 18
               ) : loading()
             ) 

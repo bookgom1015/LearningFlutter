@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math_64.dart' as math;
 import 'package:flutter_application_learning/entries/tab_btn_model.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
 
 class TabButtonAnim extends StatefulWidget {
   final TabButtonModel model;
   final int index;
   final Function callback;
   final List<IconData> icons;
+  final double minSize;
+  final double maxSize;
+  final double minIconSize;
+  final double maxIconSize;
+  final Color fromColor;
+  final Color toColor;
+  final Color fromIconColor;
+  final Color toIconColor;
+  final int animDuration;
 
   const TabButtonAnim({
     Key? key, 
     required this.model,
     required this.index,
     required this.callback,
-    required this.icons
+    required this.icons,
+    required this.minSize,
+    required this.maxSize,
+    required this.minIconSize,
+    required this.maxIconSize,
+    required this.fromColor,
+    required this.toColor,
+    required this.fromIconColor,
+    required this.toIconColor,
+    required this.animDuration
   }) : super(key: key);
 
   @override
@@ -23,31 +39,37 @@ class TabButtonAnim extends StatefulWidget {
 
 class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation _circleColorAnimation;
-  late Animation<double> _sizeCurveAnimation;
-  late Animation<double> _sizeAnimation;
+  late Animation _colorAnimation;
+  late Animation _iconColorAnimation;
+  late Animation<double> _curveAnimation;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: globals.BasicAnimDuration)
+      duration: Duration(milliseconds: widget.animDuration)
     );
 
-    _circleColorAnimation = ColorTween(
-      begin: globals.IdentityColorLayer2,
-      end: globals.IdentityColorLayer1
-    ).animate(_controller);
-
-    _sizeCurveAnimation = CurvedAnimation(
+    _curveAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.elasticIn
     );
 
-    _sizeAnimation = Tween<double>(
+    _colorAnimation = ColorTween(
+      begin: widget.fromColor,
+      end: widget.toColor
+    ).animate(_curveAnimation);
+
+    _iconColorAnimation = ColorTween(
+      begin: widget.fromIconColor,
+      end: widget.toIconColor
+    ).animate(_curveAnimation);
+
+    _animation = Tween<double>(
       begin: 0,
       end: 1
-    ).animate(_sizeCurveAnimation);
+    ).animate(_curveAnimation);
 
     widget.model.addListener(() { 
       if (widget.model.canAnimate(widget.index)) {
@@ -73,28 +95,28 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: globals.BasicAnimDuration),
+      duration: Duration(milliseconds: widget.animDuration),
       child: SizedBox(
-        width: globals.MaxTabBoxSize,
-        height: globals.MaxTabBoxSize,
+        width: widget.maxSize,
+        height: widget.maxSize,
         child: Stack(
           children: [
             Center(
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (BuildContext context, _) {                  
-                  double tabBoxSize = (globals.MinTabBoxSize + (globals.MaxTabBoxSize - globals.MinTabBoxSize) * _sizeAnimation.value);
+                  double tabBoxSize = (widget.minSize + (widget.maxSize - widget.minSize) * _animation.value);
                   return Container(
                     width: tabBoxSize,
                     height: tabBoxSize,
                     decoration: BoxDecoration(                      
-                      color: _circleColorAnimation.value,
+                      color: _colorAnimation.value,
                       shape: BoxShape.circle,
-                      boxShadow: const [          
+                      boxShadow: [          
                         BoxShadow(
-                          color: globals.ShadowColor,
-                          spreadRadius: 1,
-                          blurRadius: 4,
+                          color: _animation.value == 1 ? _colorAnimation.value : Colors.transparent,
+                          spreadRadius: 2,
+                          blurRadius: 8,
                         )
                       ]
                     ),
@@ -112,12 +134,8 @@ class _TabButtonAnimState extends State<TabButtonAnim> with SingleTickerProvider
                     },
                     child: Icon(
                       widget.icons[widget.index],
-                      size: (globals.MinTabIconSize + (globals.MaxTabIconSize - globals.MinTabIconSize) * _sizeAnimation.value),
-                      color: widget.model.animateColor(
-                        widget.index,
-                        globals.FocusedForeground,
-                        globals.UnfocusedForeground
-                      ),
+                      size: (widget.minIconSize + (widget.maxIconSize - widget.minIconSize) * _animation.value),
+                      color: _iconColorAnimation.value,
                     )
                   );
                 },
