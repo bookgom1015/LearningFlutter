@@ -72,9 +72,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     ).animate(_curveAnimation);
 
     _animation.addListener(() {
+      if (!mounted) return;
+
       setState(() {
         _currHeight = _refHeight + (_targetHeight - _refHeight) * _controller.value;
-
         if (_currHeight == 0) {
           _collapsed = true;
         }
@@ -84,33 +85,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       });
     });
     super.initState();
-  }
-
-  void getPosts() async {
-    StringBuffer uri = StringBuffer();
-      uri.write(globals.SpringUriPath);
-      uri.write("/api/team/");
-      uri.write(_group.id);
-      uri.write("/post");
-
-      var response = await http.get(Uri.parse(uri.toString()));
-
-      if (response.statusCode != 200) {
-        print("error occured: " + response.statusCode.toString());
-      }
-      else {
-        dynamic jsonArray = jsonDecode(response.body);
-        
-        List<Post> posts = [];
-        for (var json in jsonArray) {
-          posts.add(Post.fromJson(json));
-        }
-        
-        setState(() {
-          _posts = posts;
-          _loaded = true;
-        });
-      }
   }
 
   @override
@@ -149,6 +123,35 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     _controller.dispose();
   }
 
+  void getPosts() async {
+    StringBuffer uri = StringBuffer();
+      uri.write(globals.SpringUriPath);
+      uri.write("/api/team/");
+      uri.write(_group.id);
+      uri.write("/post");
+
+      var response = await http.get(Uri.parse(uri.toString()));
+
+      if (response.statusCode != 200) {
+        print("error occured: " + response.statusCode.toString());
+      }
+      else {
+        dynamic jsonArray = jsonDecode(response.body);
+        
+        List<Post> posts = [];
+        for (var json in jsonArray) {
+          posts.add(Post.fromJson(json));
+        }
+        
+        if (mounted) {
+          setState(() {
+            _posts = posts;
+            _loaded = true;
+          });
+        }
+      }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_blocked) {
@@ -179,10 +182,27 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          descriptionsAndButtonsWidget(
-                            width: _deviceWidth, 
-                            height: _maxHeight,
-                            tag: "group_" + _receivedData['index'].toString()
+                          SizedBox(
+                            width: _deviceWidth,
+                            height: _currHeight,
+                            child: FittedBox(
+                              fit: BoxFit.none,
+                              clipBehavior: Clip.hardEdge,
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: _deviceWidth,
+                                    height: _maxHeight,
+                                    child: Row(
+                                      children: [
+                                        descWidget(tag: "group_" + _receivedData['index'].toString()),
+                                        buttonsWidget()
+                                      ],
+                                    ),
+                                  ),
+                                ]
+                              )
+                            )
                           ),
                           const SizedBox(height: 10),
                           gestureBarWidget(
@@ -207,158 +227,155 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget descriptionsAndButtonsWidget({
-      required double width,
-      required double height,
-      required String tag}) {
-    return SizedBox(
-      width: width,
-      height: _currHeight,
-      child: FittedBox(
-        fit: BoxFit.none,
-        clipBehavior: Clip.hardEdge,
-        child: Column(
-          children: [
-            SizedBox(
-              width: width,
-              height: height,
-              child: Row(
-                children: [
-                  // Descriptions
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.bottomRight,
-                          end: Alignment.topLeft,
-                          stops: [
-                            0.0,
-                            0.5
-                          ],
-                          colors: [
-                            globals.ListViewItemBackgroundColors1,
-                            globals.ListViewItemBackgroundColors2,
-                          ]
-                        ),
-                        borderRadius: globals.DefaultRadius,
-                        boxShadow: const [
-                          BoxShadow(
-                            color: globals.ShadowColor,
-                            blurRadius: 12,
-                            spreadRadius: 1,
-                            offset: Offset(6, 8)
-                          )
-                        ]
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Hero(
-                                tag: tag,
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: AssetImage(_group.filePath),
-                                    )                              
-                                  )
-                                )
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                _group.hostId.toString(),
-                                style: const TextStyle(
-                                  color: globals.FocusedForeground,
-                                  fontSize: 16
-                                ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: Text(
-                                _group.desc,
-                                maxLines: null,
-                                style: const TextStyle(
-                                  color: globals.FocusedForeground,
-                                )
-                              )
-                            )
-                          )
-                        ],
-                      ),
-                    )
-                  ),
-                  // Buttons
-                  Container(
-                    width: 60,
-                    margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.bottomRight,
-                        end: Alignment.topLeft,
-                        stops: [
-                          0.0,
-                          0.5
-                        ],
-                        colors: [
-                          globals.ListViewItemBackgroundColors1,
-                          globals.ListViewItemBackgroundColors2,
-                        ]
-                      ),
-                      borderRadius: globals.DefaultRadius,
-                      boxShadow: const [
-                        BoxShadow(
-                          color: globals.ShadowColor,
-                          blurRadius: 12,
-                          spreadRadius: 1,
-                          offset: Offset(6, 8)
-                        )
-                      ]
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        SizedBox(
-                          height: 45,
-                          child: IconButton(
-                            onPressed: () {}, 
-                            icon: const Icon(Icons.add_reaction),
-                            color: globals.UnfocusedForeground,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 45,
-                          child: StarAnim(beginSize: 24, endSize: 32),
-                        ),
-                        const SizedBox(
-                          height: 45,
-                          child: HeartAnim(beginSize: 24, endSize: 32)
-                        ),
-                        SizedBox(
-                          height: 45,
-                          child: IconButton(
-                            onPressed: () {}, 
-                            icon: const Icon(Icons.report),
-                            color: globals.FocusedDangerForeground,
-                          ),
-                        )
-                      ]
-                    ),
-                  )
-                ],
-              ),
-            ),
+  Widget descWidget({required String tag}) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.bottomRight,
+            end: Alignment.topLeft,
+            stops: [
+              0.0,
+              0.5
+            ],
+            colors: [
+              globals.ListViewItemBackgroundColors1,
+              globals.ListViewItemBackgroundColors2,
+            ]
+          ),
+          borderRadius: globals.DefaultRadius,
+          boxShadow: const [
+            BoxShadow(
+              color: globals.ShadowColor,
+              blurRadius: 12,
+              spreadRadius: 1,
+              offset: Offset(6, 8)
+            )
           ]
-        )
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Hero(
+                  tag: tag,
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: AssetImage(_group.filePath),
+                      )                              
+                    )
+                  )
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  _group.hostId.toString(),
+                  style: const TextStyle(
+                    color: globals.FocusedForeground,
+                    fontSize: 16
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  _group.desc,
+                  maxLines: null,
+                  style: const TextStyle(
+                    color: globals.FocusedForeground,
+                  )
+                )
+              )
+            )
+          ],
+        ),
       )
+    );
+  }
+
+  Widget buttonsWidget() {
+    return Container(
+      width: 60,
+      margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.bottomRight,
+          end: Alignment.topLeft,
+          stops: [
+            0.0,
+            0.5
+          ],
+          colors: [
+            globals.ListViewItemBackgroundColors1,
+            globals.ListViewItemBackgroundColors2,
+          ]
+        ),
+        borderRadius: globals.DefaultRadius,
+        boxShadow: const [
+          BoxShadow(
+            color: globals.ShadowColor,
+            blurRadius: 12,
+            spreadRadius: 1,
+            offset: Offset(6, 8)
+          )
+        ]
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          SizedBox(
+            height: 45,
+            child: IconButton(
+              onPressed: () {}, 
+              icon: const Icon(
+                Icons.add_alert_rounded,
+                size: 28,
+              ),
+              color: Colors.green[300],
+            ),
+          ),
+          const SizedBox(
+            height: 45,
+            child: StarAnim(
+              beginSize: 24,
+              endSize: 36,
+              fromColor: Colors.grey,
+              toColor: Colors.yellow,
+              stroke: 8,
+              storkeFromColor: Colors.grey,
+              storkeToColor: Color.fromARGB(255, 235, 133, 0)
+            )
+          ),
+          const SizedBox(
+            height: 45,
+            child: HeartAnim(
+              beginSize: 24, 
+              endSize: 36,
+              fromColor: Colors.grey,
+              toColor: Color.fromARGB(255, 255, 209, 230),
+              stroke: 8,
+              storkeFromColor: Colors.grey,
+              storkeToColor: Colors.red,
+            )
+          ),
+          SizedBox(
+            height: 45,
+            child: IconButton(
+              onPressed: () {}, 
+              icon: const Icon(Icons.report),
+              color: Colors.red,
+            ),
+          )
+        ]
+      ),
     );
   }
 
@@ -371,6 +388,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         _refHeight = _currHeight;
       },
       onVerticalDragUpdate: (details) {
+        if (!mounted) return;
         double _deltaY = _prevY - details.globalPosition.dy;
         setState(() {
           _currHeight = math.min(math.max(_refHeight - _deltaY, 0), _maxHeight);

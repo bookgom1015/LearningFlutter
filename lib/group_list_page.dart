@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/group_list_view.dart';
+import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/entries/group.dart';
@@ -38,35 +39,14 @@ class _GroupListPageState extends State<GroupListPage> {
 
   bool _loaded = false;
 
-  void getGroupList() async {
-    StringBuffer uri = StringBuffer();
-    uri.write(globals.SpringUriPath);
-    uri.write("/api/team");
-
-    var response = await http.get(Uri.parse(uri.toString()));
-
-    if (response.statusCode != 200) {
-      print("error occured: " + response.statusCode.toString());
-      return;
-    }
-
-    List<Group> groups  = [];
-
-    Map<String, dynamic> json = jsonDecode(response.body);
-    List<dynamic> teamJsonArray = json["teams"];
-    for (var teamJson in teamJsonArray) {
-      groups.add(Group.fromJson(teamJson));
-    }
-
-    setState(() {
-      _groups = groups;
-      _loaded = true;
-    });
-  }
-
   @override
   void initState() {
-    getGroupList();    
+    getGroups((list) {
+      setState(() {
+        _groups = list;
+        _loaded = true;
+      });
+    });
 
     widget.pageController.addListener(() {
       if(_searchBarFocusNode.hasFocus) {

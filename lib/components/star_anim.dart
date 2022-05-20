@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:flutter_application_learning/globals.dart' as globals;
 
 class StarAnim extends StatefulWidget {
   final double beginSize;
   final double endSize;
+  final Color fromColor;
+  final Color toColor;
+  final double stroke;
+  final Color storkeFromColor;
+  final Color storkeToColor;
 
   const StarAnim({
     Key? key, 
     required this.beginSize,
-    required this.endSize}) : super(key: key);
+    required this.endSize,
+    required this.fromColor,
+    required this.toColor,
+    required this.stroke,
+    required this.storkeFromColor,
+    required this.storkeToColor}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _StarAnimState();
@@ -19,6 +28,7 @@ class _StarAnimState extends State<StarAnim> with SingleTickerProviderStateMixin
   late AnimationController _controller;
   late Animation<double> _curveAnimation;
   late Animation _colorAnimation;
+  late Animation _strokeColorAnimation;
   late Animation _sizeAnimation;
   late Animation _rotationAnimation;
 
@@ -37,8 +47,13 @@ class _StarAnimState extends State<StarAnim> with SingleTickerProviderStateMixin
     );
 
     _colorAnimation = ColorTween(
-      begin: globals.UnfocusedForeground,
-      end: Colors.yellow
+      begin: widget.fromColor,
+      end: widget.toColor
+    ).animate(_curveAnimation);
+
+    _strokeColorAnimation = ColorTween(
+      begin: widget.storkeFromColor,
+      end: widget.storkeToColor
     ).animate(_curveAnimation);
 
     _sizeAnimation = TweenSequence(
@@ -95,20 +110,33 @@ class _StarAnimState extends State<StarAnim> with SingleTickerProviderStateMixin
       builder: (BuildContext context, _) {
         return Transform.rotate(
           angle: _rotationAnimation.value,
-          child: IconButton(
-            onPressed: () {
-              if (isFav) {
-                _controller.reverse();
-              } else {
-                _controller.forward();
-              }
-            }, 
-            icon: Icon(
-              Icons.star,
-              color: _colorAnimation.value,
-              size: _sizeAnimation.value,
-            )
-          ),
+          child: Stack(
+            children: [
+              Center(
+                child: Icon(
+                  Icons.star,
+                  color: _strokeColorAnimation.value,
+                  size: _sizeAnimation.value,
+                )
+              ),
+              Center(
+                child: IconButton(
+                  onPressed: () {
+                    if (isFav) {
+                      _controller.reverse();
+                    } else {
+                      _controller.forward();
+                    }
+                  }, 
+                  icon: Icon(
+                    Icons.star,
+                    color: _colorAnimation.value,
+                    size: math.max(_sizeAnimation.value - widget.stroke, 0),
+                  )
+                )
+              )
+            ]
+          )
         );
       }
     );

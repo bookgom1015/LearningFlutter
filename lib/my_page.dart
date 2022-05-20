@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_learning/components/group_list_view.dart';
-import 'package:flutter_application_learning/entries/account.dart';
 import 'package:flutter_application_learning/entries/menu.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
@@ -24,17 +22,42 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {  
+  late List<Menu> _menus;
+
+  @override
+  void initState() {
+    _menus = [
+      Menu(
+        icon: Icons.edit,
+        title: "정보 수정",
+        routeName: "/edit",
+        arguments: {
+          "user": widget.user,
+          "subs": widget.subs,
+        }
+      ),
+      Menu(
+        icon: Icons.list_alt,
+        title: "참여 중인 팀 목록",
+        routeName: "/joining_group_list",
+        arguments: {
+          "user": widget.user,
+          "subs": widget.subs,
+        }
+      ),
+    ];
+
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
-    const EdgeInsets margin = EdgeInsets.fromLTRB(10, 5, 10, 5);
-    const EdgeInsets padding = EdgeInsets.all(10);
-    const double imageBoxSize = 40;
-    const double containerHeight = 70;
-
-    final double deviceWidth = MediaQuery.of(context).size.width;
-    final double actualWidth = deviceWidth - padding.left - padding.right;
-    final double postDescWidth = actualWidth - imageBoxSize;
-
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(               
@@ -106,7 +129,13 @@ class _MyPageState extends State<MyPage> {
                       child: IconButton(
                         icon: const Icon(Icons.settings),
                         onPressed: () {
-                          print("pressed");
+                          Navigator.pushNamed(
+                            widget.context, "/edit",
+                            arguments: { 
+                              "user": widget.user,
+                              "subs": widget.subs
+                            }
+                          );
                         },
                       )
                     )
@@ -116,26 +145,63 @@ class _MyPageState extends State<MyPage> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: createGroupListView(
-                groups: widget.subs.groups,
-                onTab: (index) {
-                  Navigator.pushNamed(
-                    widget.context, "/group_details",
-                    arguments: { 
-                      "index": index,
-                      "user": widget.user,
-                      "subs": widget.subs,
-                      "group": widget.subs.groups[index]
-                    }
+              child: ListView.builder(
+                itemCount: _menus.length,
+                itemBuilder: (_, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        widget.context, 
+                        _menus[index].routeName,
+                        arguments: _menus[index].arguments
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                          stops: [
+                            0.0,
+                            0.5
+                          ],
+                          colors: [
+                            globals.ListViewItemBackgroundColors1,
+                            globals.ListViewItemBackgroundColors2,
+                          ]
+                        ),
+                        borderRadius: globals.DefaultRadius,
+                        boxShadow: const [
+                          BoxShadow(
+                            color: globals.ShadowColor,
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: Offset(6, 8)
+                          )
+                        ]
+                      ),
+                      height: 70,
+                      child: Row(
+                        children: [
+                          Icon(
+                            _menus[index].icon,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            _menus[index].title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600
+                            )
+                          )
+                        ]
+                      )
+                    )
                   );
-                },
-                width: postDescWidth,
-                height: containerHeight,
-                tagsHeight: 20,
-                imageSize: 40,
-                margin: margin,
-                padding: padding,
-                descPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
+                }
               )
             )
           ]
