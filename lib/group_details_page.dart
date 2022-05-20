@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/alert_dialog.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
@@ -498,36 +499,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         onTap: () {
           if (_blocked) return;          
           if (_unqualified) {
-            showDialog(context: context, builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text(
-                  "알림",
-                  style: TextStyle(
-                    color: globals.FocusedForeground
-                  )
-                ),
-                content: const Text(
-                  "팀에 소속되어 있지 않습니다. \n글을 작성하시려면 먼저 팀에 가입해주세요.",
-                  softWrap: true,
-                  style: TextStyle(
-                    color: globals.FocusedForeground
-                  )
-                ),
-                backgroundColor: globals.IdentityColor,
-                elevation: 24,
-                shape: RoundedRectangleBorder(
-                  borderRadius: globals.DefaultRadius
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("OK"),
-                  ),
-                ],
-              );
-            });
+            showAlertDialog(
+              context: context,
+              text: "팀에 소속되어 있지 않습니다. \n글을 작성하시려면 먼저 팀에 가입해주세요.",
+              fontColor: globals.FocusedForeground,
+              backgroundColor: globals.DialogBackgroundColor,
+              borderRadius: globals.DefaultRadius
+            );
             return;
           }
           Navigator.pushNamed(
@@ -543,7 +521,18 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           height: 64,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: globals.AddPostButtonColor,
+            gradient: LinearGradient(
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
+              stops: [
+                0.2,
+                0.6
+              ],
+              colors: [
+                globals.AddPostButtonBackgroundColors1,
+                globals.AddPostButtonBackgroundColors2,
+              ]
+            ),
             boxShadow: [          
               BoxShadow(
                 color: globals.ShadowColor,

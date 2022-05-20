@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/alert_dialog.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 import 'package:http/http.dart' as http;
@@ -48,61 +50,113 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double deviceHeight = MediaQuery.of(context).size.height - 
-      MediaQuery.of(context).padding.top - // Status bar height
-      AppBar().preferredSize.height;
+    final double deviceHeight = MediaQuery.of(context).size.height;
+    final double invHalfWidth = deviceWidth * -0.5;
+    final double invHalfHeight = deviceHeight * -0.5;
 
     return MaterialApp(
       home: Scaffold(
-        appBar: createAppBar(
-          height: globals.AppBarHeight,
-          title: "로그인",
-          backgroundColor: globals.AppBarColor
-        ),
-        body: SingleChildScrollView(
-          child: Container(
-            width: deviceWidth,
-            height: deviceHeight,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: globals.BackgroundColor
-              //image: DecorationImage(
-              //  image: AssetImage('assets/images/8k_wallpaper.jpg'),
-              //  fit: BoxFit.fill
-              //)
+        body: Stack(
+          children: [
+            Positioned(
+              top: invHalfHeight,
+              right: invHalfWidth,
+              child: Container(
+                width: deviceWidth * 1.5,
+                height: deviceHeight * 1.5,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color.fromARGB(255, 227, 225, 253)
+                ),
+              )
             ),
-            child: ClipRect(
-              child: /*BackdropFilter*/(
-                //filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                /*child:*/ Container(
-                  height: 480,                
-                  margin: const EdgeInsets.fromLTRB(25, 0, 25, 0),
-                  decoration: BoxDecoration(
-                    color: globals.LoginBackground,
-                    borderRadius: globals.DefaultRadius,
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        const SizedBox(height: 50),
-                        IdWidget(),
-                        const SizedBox(height: 20),
-                        PasswordWidget(),
-                        const SizedBox(height: 30),
-                        RememberMeWidget(),
-                        const SizedBox(height: 20),                      
-                        LoginWidget(context),
-                        const SizedBox(height: 50),
-                        SignUpWidget(context)
-                      ],
-                    ),
+            Positioned(
+              top: invHalfHeight,
+              left: invHalfWidth,
+              child: Container(
+                width: deviceWidth * 1.2,
+                height: deviceHeight * 1.2,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color.fromARGB(255, 235, 252, 235)
+                ),
+              )
+            ),
+            Positioned(
+              bottom: invHalfHeight,
+              left: invHalfWidth,
+              child: Container(
+                width: deviceWidth * 1.5,
+                height: deviceHeight * 1.5,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color.fromARGB(255, 221, 246, 252)
+                ),
+              )
+            ),
+            Positioned(
+              bottom: invHalfHeight,
+              right: invHalfWidth,
+              child: Container(
+                width: deviceWidth * 1.2,
+                height: deviceHeight * 1.2,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color.fromARGB(255, 250, 239, 249)
+                ),
+              )
+            ),
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 64, sigmaY: 64),
+              child: SizedBox(
+                width: deviceWidth,
+                height: deviceHeight
+            ),
+            ),
+            SingleChildScrollView(
+              child: Container(
+                width: deviceWidth,
+                height: deviceHeight,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  //image: DecorationImage(
+                  //  image: AssetImage('assets/images/8k_wallpaper.jpg'),
+                  //  fit: BoxFit.fill
+                  //)
+                ),
+                child: Center(
+                  child: ClipRect(
+                    child: Container(
+                      height: 480,                
+                      margin: const EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      decoration: BoxDecoration(
+                        color: globals.LoginBackgroundColor,
+                        borderRadius: globals.DefaultRadius,                    
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            const SizedBox(height: 50),
+                            IdWidget(),
+                            const SizedBox(height: 20),
+                            PasswordWidget(),
+                            const SizedBox(height: 30),
+                            RememberMeWidget(),
+                            const SizedBox(height: 20),                      
+                            LoginWidget(context),
+                            const SizedBox(height: 50),
+                            SignUpWidget(context)
+                          ],
+                        ),
+                      )
+                    )
                   )
                 )
-              ),
+              )
             )
-          )
+          ]
         )
       )      
     );
@@ -125,10 +179,14 @@ class _LoginPageState extends State<LoginPage> {
           ),
           decoration: InputDecoration(
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _idIsValid ? globals.UnfocusedForeground : globals.UnfocusedDangerForeground)
+              borderSide: BorderSide(
+                color: _idIsValid ? globals.LoginUnderlineUnfocusedColor : globals.LoginUnderlineUnfocusedDangerColor
+              )
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _idIsValid ? globals.FocusedForeground : globals.FocusedDangerForeground)
+              borderSide: BorderSide(
+                color: _idIsValid ? globals.LoginUnderlineFocusedColor : globals.LoginUnderlineFocusedDangerColor
+              )
             ),
             hintText: "아이디를 입력해주세요",
             hintStyle: const TextStyle(
@@ -251,35 +309,13 @@ class _LoginPageState extends State<LoginPage> {
 
     if (response.statusCode != 200) {
       // Show error message
-      showDialog(context: context, builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            "알림",
-            style: TextStyle(
-              color: globals.FocusedForeground
-            )
-          ),
-          content: const Text(
-            "아이디 또는 패스워드가 올바르지 않습니다",
-            style: TextStyle(
-              color: globals.FocusedForeground
-            )
-          ),
-          backgroundColor: globals.IdentityColor,
-          elevation: 24,
-          shape: RoundedRectangleBorder(
-            borderRadius: globals.DefaultRadius
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      });
+      showAlertDialog(
+        context: context,
+        text: "아이디 또는 패스워드가 올바르지 않습니다.",
+        fontColor: globals.FocusedForeground,
+        backgroundColor: globals.DialogBackgroundColor,
+        borderRadius: globals.DefaultRadius
+      );
       return;
     }
 
@@ -320,8 +356,16 @@ class _LoginPageState extends State<LoginPage> {
       child: Container(
         height: 40,
         decoration: BoxDecoration(
-          color: globals.IdentityColor,
-          borderRadius: BorderRadius.circular(4)
+          color: globals.LoginButtonBackgroundColor,
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: const [
+            BoxShadow(
+              color: globals.ShadowColor,
+              blurRadius: 4,
+              spreadRadius: 1,
+              offset: Offset(4, 4)
+            ),
+          ]
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -126,7 +126,11 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
           borderRadius: BorderRadius.circular(height * 0.5),
           gradient: const RadialGradient(
             center: Alignment.center,
-            radius: 3,
+            radius: 3,      
+            stops: [
+              0.5,
+              1.0
+            ],      
             colors: [
               globals.NavBarColors1,
               globals.NavBarColors2,
@@ -134,9 +138,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
           ),
           boxShadow: const [
             BoxShadow(
-              color: globals.ShadowColor,
+              color: globals.NavBarShadowColor,
               blurRadius: 16,
-              spreadRadius: 2
+              spreadRadius: 1
             )
           ]
         ),

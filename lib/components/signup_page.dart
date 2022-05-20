@@ -20,6 +20,50 @@ class _SignupPageState extends State<SignupPage> {
   bool _nicknameIsValid = true;
   bool _pwdIsValid = true;
 
+  late FocusNode _idFocusNode;
+  late FocusNode _nicknameFocusNode;
+  late FocusNode _pwdFocusNode;
+
+  bool _idFocused = false;
+  bool _nicknameFocused = false;
+  bool _pwdFocused = false;
+
+  @override
+  void initState() {
+    _idFocusNode = FocusNode();
+    _nicknameFocusNode = FocusNode();
+    _pwdFocusNode = FocusNode();
+
+    _idFocusNode.addListener(() {
+      setState(() {
+        _idFocused = _idFocusNode.hasFocus;
+      });
+    });
+
+    _nicknameFocusNode.addListener(() {
+      setState(() {
+        _nicknameFocused = _nicknameFocusNode.hasFocus;
+      });
+    });
+
+    _pwdFocusNode.addListener(() {
+      setState(() {
+        _pwdFocused = _pwdFocusNode.hasFocus;
+      });
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _idFocusNode.dispose();
+    _nicknameFocusNode.dispose();
+    _pwdFocusNode.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -52,104 +96,146 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Widget idWidget() {
+    Color underlineColor;
+    if (_idFocused) {
+      underlineColor = _idIsValid ? globals.SignupUnderlineFocusedColor : globals.SignupUnderlineFocusedDangerColor;
+    }
+    else {
+      underlineColor = _idIsValid ? globals.SignupUnderlineUnfocusedColor : globals.SignupUnderlineUnfocusedDangerColor;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "아이디:",
-          style: TextStyle(
-            color: globals.FocusedForeground
-          ),
-        ),
-        TextFormField(
-          style: const TextStyle(
-            color: globals.FocusedForeground
-          ),
-          decoration: InputDecoration(
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _idIsValid ? globals.UnfocusedForeground : globals.UnfocusedDangerForeground)
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _idIsValid ? globals.FocusedForeground : globals.FocusedDangerForeground)
-            ),
-            hintText: "사용하실 아이디를 입력해주세요",
-            hintStyle: const TextStyle(
-              color: globals.UnfocusedForeground
+        Row(
+          children: [
+            const Text("아이디"),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextFormField(
+                focusNode: _idFocusNode,
+                style: const TextStyle(
+                  color: globals.FocusedForeground
+                ),
+                decoration: const InputDecoration(
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide.none),
+                  hintText: "8~16글자 (영문자, 숫자)",
+                  hintStyle: TextStyle(
+                    color: globals.UnfocusedForeground
+                  )
+                ),
+                onChanged: (String text) {
+                  _userId = text;
+                }
+              )
             )
-          ),
-          onChanged: (String text) {
-            _userId = text;
-          }
+          ]
+        ),
+        SizedBox(
+          height: 1,
+          child: Divider(
+            color: underlineColor,
+            thickness: 1,
+          )
         )
       ],
     );
   }
 
   Widget nicknameWidget() {
+    Color underlineColor;
+    if (_nicknameFocused) {
+      underlineColor = _nicknameIsValid ? globals.SignupUnderlineFocusedColor : globals.SignupUnderlineFocusedDangerColor;
+    }
+    else {
+      underlineColor = _nicknameIsValid ? globals.SignupUnderlineUnfocusedColor : globals.SignupUnderlineUnfocusedDangerColor;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "닉네임:",
-          style: TextStyle(
-            color: globals.FocusedForeground
-          ),
+        Row(
+          children: [
+            const Text("닉네임"),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextFormField(
+                focusNode: _nicknameFocusNode,
+                style: const TextStyle(
+                  color: globals.FocusedForeground
+                ),
+                decoration: const InputDecoration(
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide.none),
+                  hintText: "8~16글자 (영문자, 숫자)",
+                  hintStyle: TextStyle(
+                    color: globals.UnfocusedForeground
+                  )
+                ),
+                onChanged: (String text) {
+                  _userNickname = text;
+                }
+              )
+            )            
+          ]
         ),
-        TextFormField(
-          style: const TextStyle(
-            color: globals.FocusedForeground
-          ),
-          decoration: InputDecoration(
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _nicknameIsValid ? globals.UnfocusedForeground : globals.UnfocusedDangerForeground)
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _nicknameIsValid ? globals.FocusedForeground : globals.FocusedDangerForeground)
-            ),
-            hintText: "사용하실 닉네임을 입력해주세요",
-            hintStyle: const TextStyle(
-              color: globals.UnfocusedForeground
-            )
-          ),
-          onChanged: (String text) {
-            _userNickname = text;
-          }
-        )
-      ],
+        SizedBox(
+          height: 1,
+          child: Divider(
+            color: underlineColor,
+            thickness: 1,
+          )
+        )        
+      ]
     );
   }
 
   Widget pwdWidget() {
+    Color underlineColor;
+    if (_pwdFocused) {
+      underlineColor = _pwdIsValid ? globals.SignupUnderlineFocusedColor : globals.SignupUnderlineFocusedDangerColor;
+    }
+    else {
+      underlineColor = _pwdIsValid ? globals.SignupUnderlineUnfocusedColor : globals.SignupUnderlineUnfocusedDangerColor;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "패스워드:",
-          style: TextStyle(
-            color: globals.FocusedForeground
-          ),
-        ),
-        TextFormField(
-          style: const TextStyle(
-            color: globals.FocusedForeground
-          ),
-          decoration: InputDecoration(
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _pwdIsValid ? globals.UnfocusedForeground : globals.UnfocusedDangerForeground)
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _pwdIsValid ? globals.FocusedForeground : globals.FocusedDangerForeground)
-            ),
-            hintText: "사용하실 패스워드를 입력해주세요",
-            hintStyle: const TextStyle(
-              color: globals.UnfocusedForeground
+        Row(
+          children: [
+            const Text("패스워드"),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextFormField(
+                focusNode: _pwdFocusNode,
+                style: const TextStyle(
+                  color: globals.FocusedForeground
+                ),
+                decoration: const InputDecoration(
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide.none),
+                  hintText: "8~16글자 (영문자, 숫자)",
+                  hintStyle: TextStyle(
+                    color: globals.UnfocusedForeground
+                  )
+                ),
+                onChanged: (String text) {
+                  _userPwd = text;
+                }
+              )
             )
-          ),
-          onChanged: (String text) {
-            _userPwd = text;
-          }
+          ]
+        ),
+        SizedBox(
+          height: 1,
+          child: Divider(
+            color: underlineColor,
+            thickness: 1,
+          )
         )
-      ],
+      ]
     );
   }
   
@@ -157,19 +243,32 @@ class _SignupPageState extends State<SignupPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ElevatedButton(
-          onPressed: signup,
-          style: ElevatedButton.styleFrom(
-            primary: globals.IdentityColor,
-            onPrimary: globals.FocusedForeground
-          ),
-          child: Row(
-            children: const [
-              Icon(Icons.add_outlined),
-              Text(
-                "계정 생성"
+        GestureDetector(
+          onTap: signup,
+          child: Container(
+            width: 110,
+            height: 40,
+            decoration: BoxDecoration(
+              color: globals.SignupButtonBackgroundColor,
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: const [
+              BoxShadow(
+                color: globals.ShadowColor,
+                blurRadius: 4,
+                spreadRadius: 1,
+                offset: Offset(4, 4)
               )
-            ],
+            ]
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: const [
+                Icon(Icons.add_outlined),
+                Text(
+                  "계정 생성"
+                )
+              ]
+            )
           )
         )
       ],
@@ -186,6 +285,7 @@ class _SignupPageState extends State<SignupPage> {
       else {
         _idIsValid = true;
       }
+
       if (_userNickname == "") {
         isValid = false;
         _nicknameIsValid = false;
@@ -193,6 +293,7 @@ class _SignupPageState extends State<SignupPage> {
       else {
         _nicknameIsValid = true;
       }
+
       if (_userPwd == "") {
         isValid = false;
         _pwdIsValid = false;

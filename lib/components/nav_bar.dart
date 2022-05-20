@@ -41,10 +41,11 @@ AppBar createAppBar({
                   itemBuilder: (_, index) {
                     return GestureDetector(
                       onTap: () {
-                        btnList?[index].btnFunc();
+                        btnList?[index].func();
                       },
                       child: Icon(
-                        btnList?[index].btnIcon,
+                        btnList?[index].icon,
+                        color: btnList?[index].color,
                         size: btnSize,
                       )
                     );

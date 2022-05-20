@@ -30,7 +30,7 @@ class _GroupListPageState extends State<GroupListPage> {
   List<Group> _groups = [];
 
   final List<String> _dropDownMenuItemList = [
-    "One", "Two", "Three", "Four"
+    "제목", "내용", "태그"
   ];
 
   final FocusNode _searchBarFocusNode = FocusNode();
@@ -104,7 +104,11 @@ class _GroupListPageState extends State<GroupListPage> {
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
               dropDownMenuItemList: _dropDownMenuItemList,
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+              margin: const EdgeInsets.fromLTRB(0, 0, 0, 1),
+              dropdownColor: globals.DropdownColor,
+              focusedColor: globals.FocusedForeground,
+              unfocusedColor: globals.UnfocusedForeground,
             ),
             Expanded(
               child: _loaded ? createGroupListView(

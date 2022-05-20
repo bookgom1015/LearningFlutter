@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
 import 'package:flutter_application_learning/entries/group.dart';
@@ -10,6 +11,8 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 
 class WritePostPage extends StatefulWidget {
+  static double MaxHeight = 140;
+
   const WritePostPage({Key? key}) : super(key: key);
 
   @override
@@ -23,7 +26,6 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
   String _tags = "";
   String _desc = "";
 
-  double _maxHeight = 140;
   late double _middleHeight;
   late double _currHeight;
   double _refHeight = 0;
@@ -72,8 +74,8 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
 
   @override
   void initState() {
-    _middleHeight = _maxHeight * 0.5;
-    _currHeight = _maxHeight;
+    _middleHeight = WritePostPage.MaxHeight * 0.5;
+    _currHeight = WritePostPage.MaxHeight;
 
     _controller = AnimationController(
       vsync: this,
@@ -97,7 +99,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
         if (_currHeight == 0) {
           _collapsed = true;
         }
-        else if (_currHeight == _maxHeight) {
+        else if (_currHeight == WritePostPage.MaxHeight) {
           _collapsed = false;
         }
       });
@@ -125,8 +127,9 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
           btnSize: 32,
           btnList: [
             AppBarBtn(
-              btnIcon: Icons.send,
-              btnFunc: () {
+              icon: Icons.send,
+              color: Colors.black,
+              func: () {
                 if (!_sending) {
                   setState(() {
                     _sending = true;
@@ -144,11 +147,32 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              titleAndTags(deviceWidth),
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (BuildContext context, _) {
+                  return SizedBox(
+                    height: _currHeight,
+                    child: FittedBox(
+                      fit: BoxFit.none,
+                      clipBehavior: Clip.hardEdge,
+                      child: SizedBox(
+                        width: deviceWidth,
+                        height: WritePostPage.MaxHeight,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 10),
+                            titleWidget(),
+                            tagsWidget()
+                          ],
+                        )
+                      )
+                    )
+                  );
+                }
+              ),
+              gestureBarWidget(),
               const SizedBox(height: 5),
-              gestureBar(),
-              const SizedBox(height: 5),
-              descBox()
+              descWidget()
             ],
           ),
         ),
@@ -156,156 +180,95 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     );
   }
 
-  Widget titleAndTags(double width) {
-    Widget titleWidget = Container(
+  Widget titleWidget() {
+    return Container(
       height: 60,
-      margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
-      padding: const EdgeInsets.only(left: 10),
-      decoration: BoxDecoration(
-        color: globals.IdentityColor,
-        borderRadius: globals.DefaultRadius
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 40,
-            child: Center(
-              child: Text(
-                "제목",
-                style: TextStyle(
-                  color: globals.FocusedForeground,
-                  letterSpacing: 6
-                )
-              )
+      child: TextFormField(
+        style: const TextStyle(
+          color: globals.FocusedForeground
+        ),
+        maxLines: 1,
+        inputFormatters: [
+          LengthLimitingTextInputFormatter(256)
+        ],
+        decoration: const InputDecoration(
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 10),
+          hintText: "제목",
+          hintStyle: TextStyle(
+            color: globals.UnfocusedForeground
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: globals.UnderlineColor,
+              width: 1
             )
           ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(10),
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: TextFormField(
-                style: const TextStyle(
-                  color: globals.FocusedForeground
-                ),
-                maxLines: 1,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(256)
-                ],
-                decoration: const InputDecoration(
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2
-                    )
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2
-                    )
-                  ),
-                ),
-                onChanged: (text) {
-                   setState(() {
-                     _title = text;
-                   });
-                },
-              ),
-            )
-          )
-        ],
-      ),
-    );
-
-    Widget tagWidget = Container(
-      height: 60,
-      margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
-      padding: const EdgeInsets.only(left: 10),
-      decoration: BoxDecoration(
-        color: globals.IdentityColor,
-        borderRadius: globals.DefaultRadius
-      ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 40,
-            child: Center(
-              child: Text(
-                "태그",
-                style: TextStyle(
-                  color: globals.FocusedForeground,
-                  letterSpacing: 6
-                )
-              )
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: globals.UnderlineColor,
+              width: 1
             )
           ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(10),
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: TextFormField(
-                style: const TextStyle(
-                  color: globals.FocusedForeground
-                ),
-                maxLines: 1,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(256)
-                ],
-                decoration: const InputDecoration(
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2
-                    )
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 2
-                    )
-                  )
-                ),
-                onChanged: (text) {
-                   setState(() {
-                     _tags = text;
-                   });
-                },
-              ),                        
-            )
-          )
-        ],
+        ),
+        onChanged: (text) {
+           setState(() {
+             _title = text;
+           });
+        },
       )
-    );
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (BuildContext context, _) {
-        return SizedBox(
-          height: _currHeight,
-          child: FittedBox(
-            fit: BoxFit.none,
-            clipBehavior: Clip.hardEdge,
-            child: SizedBox(
-              width: width,
-              height: _maxHeight,
-              child: Column(
-                children: [
-                  titleWidget,
-                  tagWidget
-                ],
-              )
-            )
-          )
-        );
-      }
     );
   }
 
-  Widget gestureBar() {
+  Widget tagsWidget() {
+    return Container(
+      height: 60,
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
+      ),
+      child: TextFormField(
+        style: const TextStyle(
+          color: globals.FocusedForeground
+        ),
+        maxLines: 1,
+        inputFormatters: [
+          LengthLimitingTextInputFormatter(256)
+        ],
+        decoration: const InputDecoration(
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 10),
+          hintText: "태그 (ex: tag1, tag2, tag3, ...)",
+          hintStyle: TextStyle(
+            color: globals.UnfocusedForeground
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: globals.UnderlineColor,
+              width: 1
+            )
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: globals.UnderlineColor,
+              width: 1
+            )
+          )
+        ),
+        onChanged: (text) {
+           setState(() {
+             _tags = text;
+           });
+        },
+      )
+    );
+  }
+
+  Widget gestureBarWidget() {
     return GestureDetector(
       onVerticalDragStart: (details) {
         _prevY = details.globalPosition.dy;
@@ -314,7 +277,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
       onVerticalDragUpdate: (details) {
         double _deltaY = _prevY - details.globalPosition.dy;
         setState(() {
-          _currHeight = math.min(math.max(_refHeight - _deltaY, 0), _maxHeight);
+          _currHeight = math.min(math.max(_refHeight - _deltaY, 0), WritePostPage.MaxHeight);
         });
       },
       onVerticalDragEnd: (details) {
@@ -324,7 +287,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
         if (abs_dy < 0) abs_dy *= -1;
         if (abs_dy > globals.GestureBarTriggerSpeed) {
           if (dy > 0) {
-            _targetHeight = _maxHeight;
+            _targetHeight = WritePostPage.MaxHeight;
           }
           else {
             _targetHeight = 0;
@@ -332,7 +295,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
         }
         else {
           if (_currHeight > _middleHeight) {
-            _targetHeight = _maxHeight;
+            _targetHeight = WritePostPage.MaxHeight;
           }
           else {
             _targetHeight = 0;
@@ -355,37 +318,39 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     );
   }
 
-  Widget descBox() {
+  Widget descWidget() {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-        decoration: BoxDecoration(
-          color: globals.IdentityColor,
-          borderRadius: globals.DefaultRadius
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+        padding: const EdgeInsets.all(10),
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
+          border: Border(
+            top: BorderSide(
+              width: 1,
+              color: globals.UnderlineColor,
+            )
+          )
         ),
-        child: Container(
-          margin: const EdgeInsets.all(15),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: globals.BackgroundColor,
-            borderRadius: globals.DefaultRadius
+        child: TextFormField(
+          maxLines: null,
+          style: const TextStyle(
+            color: globals.FocusedForeground
           ),
-          child: TextFormField(
-            maxLines: null,
-            style: const TextStyle(
-              color: globals.FocusedForeground
+          decoration: const InputDecoration(
+            hintText: "내용을 입력하세요",
+            hintStyle: TextStyle(
+              color: globals.UnfocusedForeground
             ),
-            decoration: const InputDecoration(
-              focusedBorder: InputBorder.none,
-              enabledBorder: InputBorder.none
-            ),
-            onChanged: (text) {
-               setState(() {
-                 _desc = text;
-               });
-            },
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none
           ),
-        ),
+          onChanged: (text) {
+             setState(() {
+               _desc = text;
+             });
+          },
+        )
       )
     );
   }

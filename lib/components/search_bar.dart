@@ -7,14 +7,20 @@ class SearchBar extends StatefulWidget {
   final List<String> dropDownMenuItemList;
   EdgeInsets margin;
   EdgeInsets padding;
+  Color dropdownColor;
+  Color focusedColor;
+  Color unfocusedColor;
 
   SearchBar({
     Key? key, 
     required this.focusNode,
     required this.controller,
     required this.dropDownMenuItemList,
+    required this.dropdownColor,
     this.margin = EdgeInsets.zero,
-    this.padding = EdgeInsets.zero}) : super(key: key);
+    this.padding = EdgeInsets.zero,
+    this.focusedColor = Colors.black,
+    this.unfocusedColor = Colors.grey}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchBarState();
@@ -44,30 +50,30 @@ class _SearchBarState extends State<SearchBar> {
       child: TextFormField(
         controller: widget.controller,
         focusNode: widget.focusNode,
-        style: const TextStyle(
-          color: globals.FocusedForeground
+        style: TextStyle(
+          color: widget.focusedColor
         ),
         decoration: InputDecoration(
-          enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: globals.UnfocusedForeground)
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: widget.unfocusedColor)
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: globals.FocusedForeground)
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: widget.focusedColor)
           ),
           prefixIcon: DropdownButton(
             value: dropDownValue,            
-            style: const TextStyle(
-              color: globals.FocusedForeground,
+            style: TextStyle(
+              color: widget.focusedColor,
             ),
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_drop_down,
-              color: globals.FocusedForeground,
+              color: widget.focusedColor,
             ),
             underline: const SizedBox(
               width: 0,
               height: 0
             ),
-            dropdownColor: globals.IdentityColor,
+            dropdownColor: widget.dropdownColor,
             onChanged: (String? newValue) {
               setState(() {
                 dropDownValue = newValue!;
@@ -83,7 +89,7 @@ class _SearchBarState extends State<SearchBar> {
           ),
           suffixIcon: Icon(
             Icons.search,
-            color: searchBarFocused ?globals.FocusedForeground : globals.UnfocusedForeground
+            color: searchBarFocused ? widget.focusedColor : widget.unfocusedColor
           )
         ),            
       )
