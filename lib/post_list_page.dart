@@ -1,24 +1,24 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/http_helpers.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'package:http/http.dart' as http;
 
 class PostListPage extends StatefulWidget {
-  final User user;
-  final Subscriptions subs;
+  final KeyValueStorage storage;
   final BuildContext context;
   final PageController pageController;
 
   const PostListPage({
     Key? key,
-    required this.user,
-    required this.subs,
+    required this.storage,
     required this.context, 
     required this.pageController}) : super(key: key);
 
@@ -27,7 +27,7 @@ class PostListPage extends StatefulWidget {
 }
 
 class _PostListPageState extends State<PostListPage> {
-  List<Post> _postList = [];
+  List<Post> _posts = [];
 
   final List<String> _dropDownMenuItemList = [
     "제목", "내용", "태그"
@@ -38,41 +38,20 @@ class _PostListPageState extends State<PostListPage> {
 
   bool _loaded = false;
 
-  void getPostList() async {
-    StringBuffer uri = StringBuffer();
-    uri.write(globals.SpringUriPath);
-    uri.write("/api/post");
-
-    var response = await http.get(Uri.parse(uri.toString()));
-
-    if (response.statusCode != 200) {
-      print("error occured: " + response.statusCode.toString());
-      return;
-    }
-
-    List<Post> postList = [];
-
-    List<dynamic> jsonArray = jsonDecode(response.body);
-    for (var json in jsonArray) {
-      postList.add(Post.fromJson(json));
-    }
-
-    setState(() {
-      _postList = postList;
-      _loaded = true;
-    });
-  }
-
   @override
   void initState() {
-    getPostList();
-
     widget.pageController.addListener(() {
       if(_searchBarFocusNode.hasFocus) {
-        SearchBarLostedFocus();
+        searchBarLostedFocus();
       }
     });
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    generatePosts();
+    super.didChangeDependencies();
   }
 
   @override
@@ -83,9 +62,21 @@ class _PostListPageState extends State<PostListPage> {
   }
 
   // ignore: non_constant_identifier_names
-  void SearchBarLostedFocus() {
+  void searchBarLostedFocus() {
     _searchBarFocusNode.unfocus();
     _searchBarController.clear();
+  }
+
+  void generatePosts() async {
+    int statusCode = await getPosts((list) {
+      setState(() {
+        _posts = list;
+        _loaded = true;
+      });
+    });
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
   }
   
   @override
@@ -110,31 +101,48 @@ class _PostListPageState extends State<PostListPage> {
               unfocusedColor: globals.UnfocusedForeground,
             ),
             Expanded(
-              child: _loaded ? createPostListView(
-                posts: _postList, 
-                onTab: (index) {
-                  if(_searchBarFocusNode.hasFocus) {
-                    SearchBarLostedFocus();
-                  }
+              child: _loaded ? Stack(
+                children: [
+                  createPostListView(
+                    posts: _posts, 
+                    onTab: (index) {
+                      if(_searchBarFocusNode.hasFocus) {
+                        searchBarLostedFocus();
+                      }
 
-                  Navigator.pushNamed(
-                    widget.context, "/post",
-                    arguments: {
-                      "index": index,
-                      "post": _postList[index],
-                    }
-                  );
-                }, 
-                height: 180, 
-                titleHeight: 40, 
-                imageSize: 40, 
-                tagsWidth: deviceWidth, 
-                tagsHeight: 20,
-                maxLines: 3,
-                margin: const EdgeInsets.fromLTRB(10, 0, 10, 20),
-                padding: const EdgeInsets.all(10),
-                viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110),
-                titleFontSize: 18
+                      Navigator.pushNamed(
+                        widget.context, "/post",
+                        arguments: {
+                          "index": index,
+                          "post": _posts[index],
+                        }
+                      );
+                    }, 
+                    height: 180, 
+                    titleHeight: 40, 
+                    imageSize: 40, 
+                    tagsWidth: deviceWidth, 
+                    tagsHeight: 20,
+                    maxLines: 3,
+                    margin: const EdgeInsets.fromLTRB(10, 0, 10, 20),
+                    padding: const EdgeInsets.all(10),
+                    viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110),
+                    titleFontSize: 18
+                  ),
+                  Container(
+                    height: 30,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          globals.BackgroundColor,
+                          Color.fromARGB(0, 233, 232, 232),
+                        ]
+                      )
+                    ),
+                  )
+                ]
               ) : loading()
             ) 
           ],

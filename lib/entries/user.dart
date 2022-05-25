@@ -25,11 +25,11 @@ class User {
   @override
   String toString() {
     StringBuffer sb = StringBuffer();
-    sb.write("{token: "); sb.write(token);
-    sb.write(", id: "); sb.write(id);
-    sb.write(", userName: "); sb.write(userName);
-    sb.write(", userNickname: "); sb.write(userNickname);
-    sb.write(", userProfile: "); sb.write(userProfile.toString());
+    sb.write("{\"token\": \""); sb.write(token);
+    sb.write("\", \"id\": "); sb.write(id);
+    sb.write(", \"userName\": \""); sb.write(userName);
+    sb.write("\", \"userNickname\": \""); sb.write(userNickname);
+    sb.write("\", \"userProfile\": "); sb.write(userProfile.toString());
     sb.write("}");
     return sb.toString();
   }

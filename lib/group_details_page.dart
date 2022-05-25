@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/alert_dialog.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
+import 'package:flutter_application_learning/components/http_helpers.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
@@ -10,7 +12,7 @@ import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 
@@ -35,6 +37,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   late Animation<double> _curveAnimation;
   late Animation<double> _animation;
 
+  late KeyValueStorage _storage;
+
   late User _user;
   late Subscriptions _subs;
   late Group _group;
@@ -50,6 +54,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   double _deviceHeight = 0;
 
   bool _collapsed = false;
+
+  bool _requesting = false;
+
+  int _requestCount = 1;
 
   @override
   void initState() {
@@ -90,25 +98,12 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   @override
   void didChangeDependencies() {
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-    _user = _receivedData["user"];
-    _subs = _receivedData["subs"];
+    _storage = _receivedData["storage"];
+    _user = User.fromJson(jsonDecode(_storage.get("user")));
+    _subs = Subscriptions.fromJson(jsonDecode(_storage.get("subs")));
     _group = _receivedData["group"];
 
-    bool isMatched = false;
-    for (var group in _subs.groups) {
-      if (group.id == _group.id) {
-        isMatched = true;
-        break;
-      }
-    }
-
-    if (isMatched || !_group.type) {
-      _blocked = false; 
-    }
-
-    if (!_blocked && !isMatched) {
-      _unqualified = true;
-    }
+    qualify();
 
     _deviceWidth = MediaQuery.of(context).size.width;
     _deviceHeight = MediaQuery.of(context).size.height - 
@@ -121,6 +116,23 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   @override void dispose() {
     super.dispose();
     _controller.dispose();
+  }
+
+  void qualify() {
+    bool isMatched = false;
+    for (var group in _subs.groups) {
+      if (group.id == _group.id) {
+        isMatched = true;
+        _unqualified = false;
+        break;
+      }
+    }
+    if (isMatched || !_group.type) {
+      _blocked = false; 
+    }
+    if (!_blocked && !isMatched) {
+      _unqualified = true;
+    }
   }
 
   void getPosts() async {
@@ -150,6 +162,33 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           });
         }
       }
+  }
+
+  void onJoinButtonClicked() async {
+    int statusCode = await requestToJoin(_user.token, _group.id);
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      _requesting = false;
+      return;
+    }
+
+    statusCode = await getSubscriptions(
+      _user.id,
+      (data) {
+        _subs = data;
+      }
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      _requesting = false;
+      return;
+    }
+
+    _storage.set("subs", _subs.toString());
+    qualify();
+
+    _requesting = false;
+    showAlertDialog(context: context, text: "참여 요청이 전송되었습니다.");
   }
 
   @override
@@ -283,14 +322,17 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                 )
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
-                child: Text(
-                  _group.desc,
-                  maxLines: null,
-                  style: const TextStyle(
-                    color: globals.FocusedForeground,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _group.desc,
+                    maxLines: null,
+                    style: const TextStyle(
+                      color: globals.FocusedForeground,
+                    )
                   )
                 )
               )
@@ -298,6 +340,71 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
           ],
         ),
       )
+    );
+  }
+
+  Widget firstButtonWidget() {
+    bool isHost = _group.hostId == _user.id;
+    if (!isHost) {
+      return IconButton(
+        onPressed: () {
+          if (!_requesting) {
+            _requesting = true;
+            onJoinButtonClicked();
+          }
+        }, 
+        icon: const Icon(
+          Icons.notification_add,
+          size: 28,
+        ),
+        color: Colors.green[300],
+      );
+    }
+
+    List<Widget> widgetList = [];
+    widgetList.add(
+      IconButton(
+        onPressed: () {
+          Navigator.pushNamed(
+            context,
+            "/permision"
+          );
+        },
+        icon: const Icon(
+          Icons.alarm_add,
+          size: 28,
+        ),
+        color: Colors.green[300],
+      )
+    );
+    if (_requestCount > 0) {
+      widgetList.add(
+        Positioned(
+          right: 5,
+          bottom: 5,
+          child: Container(
+            width: 15,
+            height: 15,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.yellow
+            ),
+            child: Center(
+              child: Text(
+                _requestCount.toString(),
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold
+                ),
+              )
+            )
+          )
+        )
+      );
+    }
+
+    return Stack(
+      children: widgetList
     );
   }
 
@@ -333,14 +440,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         children: [
           SizedBox(
             height: 45,
-            child: IconButton(
-              onPressed: () {}, 
-              icon: const Icon(
-                Icons.add_alert_rounded,
-                size: 28,
-              ),
-              color: Colors.green[300],
-            ),
+            child: firstButtonWidget()
           ),
           const SizedBox(
             height: 45,

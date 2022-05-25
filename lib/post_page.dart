@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/reply.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 
 class PostPage extends StatefulWidget {
   const PostPage({Key? key}) : super(key: key);
@@ -71,7 +71,6 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-
     double deviceWidth = MediaQuery.of(context).size.width;
     double extendedHeight = MediaQuery.of(context).size.height * 0.5;
     

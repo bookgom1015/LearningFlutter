@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_learning/components/signup_page.dart';
+import 'package:flutter_application_learning/add_group.dart';
+import 'package:flutter_application_learning/permision.page.dart';
+import 'package:flutter_application_learning/signup_page.dart';
 import 'package:flutter_application_learning/edit_account_page.dart';
+import 'package:flutter_application_learning/edit_profile_page.dart';
 import 'package:flutter_application_learning/group_details_page.dart';
 import 'package:flutter_application_learning/joining_group_list_page.dart';
 import 'package:flutter_application_learning/login_page.dart';
 import 'package:flutter_application_learning/main_page.dart';
 import 'package:flutter_application_learning/post_page.dart';
+import 'package:flutter_application_learning/withdrawal_page.dart';
 import 'package:flutter_application_learning/write_post.dart';
 
 MaterialApp createRouter() {
@@ -18,8 +22,12 @@ MaterialApp createRouter() {
       '/group_details': (context) => const GroupDetailsPage(),
       '/write_post': (context) => const WritePostPage(),
       '/post': (context) => const PostPage(),
-      '/edit': (context) => const EditAccountPage(),
+      '/edit_account': (context) => const EditAccountPage(),
+      '/edit_profile': (context) => const EditProfilePage(),
       '/joining_group_list': (context) => const JoiningGroupListPage(),
+      '/withdrawal': (context) => const WithdrawalPage(),
+      '/add_group': (context) => const AddGroupPage(),
+      '/permision': (context) => const PermisionPage(),
     },
   );
 }

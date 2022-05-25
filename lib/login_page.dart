@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/alert_dialog.dart';
+import 'package:flutter_application_learning/components/http_helpers.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_learning/components/nav_bar.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -27,12 +30,16 @@ class _LoginPageState extends State<LoginPage> {
   bool _idIsValid = true;
   bool _pwdIsValid= true;
 
-  final _storage = const FlutterSecureStorage();
+  final _secureStorage = const FlutterSecureStorage();
 
   bool _isChecked = false;
 
+  KeyValueStorage _storage = KeyValueStorage();
+
   @override
   void initState() {
+    _storage.init();
+    
     _pwdFocusNode.addListener(() {
       setState(() {
         _pwdFocused = _pwdFocusNode.hasFocus;
@@ -322,29 +329,28 @@ class _LoginPageState extends State<LoginPage> {
     var json = jsonDecode(response.body);
     
     if (_isChecked) {
-      _storage.write(key: "user_id", value: _userId);
-      _storage.write(key: "user_pwd", value: _userPwd);
+      _secureStorage.write(key: "user_id", value: _userId);
+      _secureStorage.write(key: "user_pwd", value: _userPwd);
     }
 
     User user = User.fromJson(json);
+    late Subscriptions subs;
 
-    uri.clear();
-    uri.write(globals.SpringUriPath);
-    uri.write("/api/user/");
-    uri.write(user.id);
-    uri.write("/subscription");
-
-    response = await http.get(Uri.parse(uri.toString()));
-
-    if (response.statusCode != 200) {
+    int statusCode = await getSubscriptions(
+      user.id, 
+      (data) {
+        subs = data;
+      }
+    );
+    if (statusCode != 200) {
       print("error occured");
       return;
-    }
+    }    
 
-    List<dynamic> subscriptions = jsonDecode(response.body);
-    Subscriptions subs = Subscriptions.fromJson(subscriptions);
+    _storage.set("user", user.toString());
+    _storage.set("subs", subs.toString());
 
-    Navigator.pushReplacementNamed(context, '/main', arguments: {"user": user, "subs": subs});
+    Navigator.pushReplacementNamed(context, '/main', arguments: {"storage": _storage, "user": user, "subs": subs});
   }
 
   // ignore: non_constant_identifier_names

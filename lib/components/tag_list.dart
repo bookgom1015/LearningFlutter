@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/string_helper.dart';
 
 class TagList extends StatelessWidget {
   final double width;
@@ -16,14 +17,6 @@ class TagList extends StatelessWidget {
     required this.fontColor,
     required this.backgroundColor,
     required this.shadowColor}) : super(key: key);
-
-  Size calcTextSize(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    return textPainter.size;
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -38,16 +38,28 @@ class Group {
   @override
   String toString() {
     StringBuffer sb = StringBuffer();
-    sb.write("{id: "); sb.write(id);
-    sb.write(", name: "); sb.write(name);
-    sb.write(", tags"); sb.write(tags);
-    sb.write(", description: "); sb.write(desc);
-    sb.write(", fileName: "); sb.write(fileName);
-    sb.write(", fileSize: "); sb.write(fileSize);
-    sb.write(", filePath: "); sb.write(filePath);
-    sb.write(", type: "); sb.write(type ? "PRIVATE" : "PUBLIC");
-    sb.write(", hostId: "); sb.write(hostId);
-    sb.write(", closed: "); sb.write(closed.toString());
+    sb.write("{\"id\": "); sb.write(id);
+    sb.write(", \"name\": \""); sb.write(name);
+    sb.write("\", \"tags\": [");
+    StringBuffer tagSb = StringBuffer();
+    for (String tag in tags) {
+      tagSb.write("\"");
+      tagSb.write(tag);
+      tagSb.write("\"");
+      tagSb.write(",");
+    }
+    String tagStr = tagSb.toString();
+    if (tags.length > 0) {
+      String tagSubstr = tagStr.substring(0, tagStr.length - 1);
+      sb.write(tagSubstr);
+    }
+    sb.write("], \"description\": \""); sb.write(desc);
+    sb.write("\", \"fileName\": \""); sb.write(fileName);
+    sb.write("\", \"fileSize\": "); sb.write(fileSize);
+    sb.write(", \"filePath\": \""); sb.write(filePath);
+    sb.write("\", \"type\": \""); sb.write(type ? "PRIVATE" : "PUBLIC");
+    sb.write("\", \"hostId\": "); sb.write(hostId);
+    sb.write(", \"closed\": "); sb.write(closed.toString());
     sb.write("}");
     return sb.toString();
   }

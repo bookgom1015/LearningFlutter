@@ -23,12 +23,12 @@ class UserProfile {
   @override
   String toString() {
     StringBuffer sb = StringBuffer();
-    sb.write("{id: "); sb.write(id);
-    sb.write(", fileName: "); sb.write(fileName);
-    sb.write(", fileSize: "); sb.write(fileSize);
-    sb.write(", filePath: "); sb.write(filePath);
-    sb.write(", description: "); sb.write(desc);
-    sb.write("}");
+    sb.write("{\"id\": "); sb.write(id);
+    sb.write(", \"fileName\": \""); sb.write(fileName);
+    sb.write("\", \"fileSize\": "); sb.write(fileSize);
+    sb.write(", \"filePath\": \""); sb.write(filePath);
+    sb.write("\", \"description\": \""); sb.write(desc);
+    sb.write("\"}");
     return sb.toString();
   }
 }

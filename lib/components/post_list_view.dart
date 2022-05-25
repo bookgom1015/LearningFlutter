@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/tag_list.dart';
 import 'package:flutter_application_learning/entries/post.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 
 Widget createPostListView({
     required List<Post> posts,

@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/underline_input.dart';
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'package:http/http.dart' as http;
 
 class SignupPage extends StatefulWidget {
@@ -103,43 +104,18 @@ class _SignupPageState extends State<SignupPage> {
     else {
       underlineColor = _idIsValid ? globals.SignupUnderlineUnfocusedColor : globals.SignupUnderlineUnfocusedDangerColor;
     }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text("아이디"),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextFormField(
-                focusNode: _idFocusNode,
-                style: const TextStyle(
-                  color: globals.FocusedForeground
-                ),
-                decoration: const InputDecoration(
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide.none),
-                  hintText: "8~16글자 (영문자, 숫자)",
-                  hintStyle: TextStyle(
-                    color: globals.UnfocusedForeground
-                  )
-                ),
-                onChanged: (String text) {
-                  _userId = text;
-                }
-              )
-            )
-          ]
-        ),
-        SizedBox(
-          height: 1,
-          child: Divider(
-            color: underlineColor,
-            thickness: 1,
-          )
-        )
-      ],
+    
+    return underlineInputfiled(
+      focusNode: _idFocusNode,
+      fontColor: globals.FocusedForeground, 
+      hintFontColor: globals.UnfocusedForeground, 
+      onChanged: (String text) {
+        _userId = text;
+      }, 
+      underlineColor: underlineColor,
+      text: "아이디",
+      hintText: "8~16글자 (영문자, 숫자)",
+      width: 60
     );
   }
 
@@ -152,42 +128,17 @@ class _SignupPageState extends State<SignupPage> {
       underlineColor = _nicknameIsValid ? globals.SignupUnderlineUnfocusedColor : globals.SignupUnderlineUnfocusedDangerColor;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text("닉네임"),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextFormField(
-                focusNode: _nicknameFocusNode,
-                style: const TextStyle(
-                  color: globals.FocusedForeground
-                ),
-                decoration: const InputDecoration(
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide.none),
-                  hintText: "8~16글자 (영문자, 숫자)",
-                  hintStyle: TextStyle(
-                    color: globals.UnfocusedForeground
-                  )
-                ),
-                onChanged: (String text) {
-                  _userNickname = text;
-                }
-              )
-            )            
-          ]
-        ),
-        SizedBox(
-          height: 1,
-          child: Divider(
-            color: underlineColor,
-            thickness: 1,
-          )
-        )        
-      ]
+    return underlineInputfiled(
+      focusNode: _nicknameFocusNode,
+      fontColor: globals.FocusedForeground, 
+      hintFontColor: globals.UnfocusedForeground, 
+      onChanged: (String text) {
+        _userNickname = text;
+      }, 
+      underlineColor: underlineColor,
+      text: "닉네임",
+      hintText: "8~16글자 (영문자, 숫자)",
+      width: 60
     );
   }
 
@@ -200,42 +151,17 @@ class _SignupPageState extends State<SignupPage> {
       underlineColor = _pwdIsValid ? globals.SignupUnderlineUnfocusedColor : globals.SignupUnderlineUnfocusedDangerColor;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text("패스워드"),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextFormField(
-                focusNode: _pwdFocusNode,
-                style: const TextStyle(
-                  color: globals.FocusedForeground
-                ),
-                decoration: const InputDecoration(
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide.none),
-                  hintText: "8~16글자 (영문자, 숫자)",
-                  hintStyle: TextStyle(
-                    color: globals.UnfocusedForeground
-                  )
-                ),
-                onChanged: (String text) {
-                  _userPwd = text;
-                }
-              )
-            )
-          ]
-        ),
-        SizedBox(
-          height: 1,
-          child: Divider(
-            color: underlineColor,
-            thickness: 1,
-          )
-        )
-      ]
+    return underlineInputfiled(
+      focusNode: _pwdFocusNode,
+      fontColor: globals.FocusedForeground, 
+      hintFontColor: globals.UnfocusedForeground, 
+      onChanged: (String text) {
+        _userPwd = text;
+      }, 
+      underlineColor: underlineColor,
+      text: "패스워드",
+      hintText: "8~16글자 (영문자, 숫자)",
+      width: 60
     );
   }
   

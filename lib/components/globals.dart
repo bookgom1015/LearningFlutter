@@ -51,6 +51,27 @@ const Color SignupUnderlineUnfocusedColor = Color.fromARGB(255, 209, 209, 209);
 const Color SignupUnderlineFocusedDangerColor = Colors.red;
 const Color SignupUnderlineUnfocusedDangerColor = Color.fromARGB(255, 158, 11, 11);
 
+const Color WithdrawalBackgroundColors1 = Color.fromARGB(255, 231, 231, 231);
+const Color WithdrawalBackgroundColors2 = Color.fromARGB(255, 241, 241, 241);
+
+const Color WithdrawalButtonBackgroundColor = Color.fromARGB(104, 255, 0, 0);
+
+const Color AddGroupUnderlineFocusedColor = Color.fromARGB(255, 184, 184, 184);
+const Color AddGroupUnderlineUnfocusedColor = Color.fromARGB(255, 209, 209, 209);
+const Color AddGroupUnderlineFocusedDangerColor = Colors.red;
+const Color AddGroupUnderlineUnfocusedDangerColor = Color.fromARGB(255, 158, 11, 11);
+
+const Color EditAccountUnderlineFocusedColor = Color.fromARGB(255, 184, 184, 184);
+const Color EditAccountUnderlineUnfocusedColor = Color.fromARGB(255, 209, 209, 209);
+const Color EditAccountUnderlineFocusedDangerColor = Colors.red;
+const Color EditAccountUnderlineUnfocusedDangerColor = Color.fromARGB(255, 158, 11, 11);
+
+
+
+
+
+
+
 
 
 

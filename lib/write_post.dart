@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/user.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 
@@ -44,34 +44,6 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
   bool _collapsed = false;
   bool _sending = false;
 
-  void send() async {
-    StringBuffer uri = StringBuffer();
-    uri.write(globals.SpringUriPath);
-    uri.write("/api/team/");
-    uri.write(_group.id);
-    uri.write("/post");
-
-    String spaceless = _tags.replaceAll(" ", "");
-    var tags = spaceless.split(",");
-
-    var response = await http.post(
-      Uri.parse(uri.toString()),
-      headers: { "Content-Type": "application/json", "Authorization" : _user.token },
-      body: jsonEncode({
-        "title": _title,
-        "description": _desc,
-        "tags": tags,
-      })
-    );
-
-    if (response.statusCode != 200) {
-      print("error occured: " + response.statusCode.toString());
-      return;
-    }
-
-    Navigator.pop(_context);
-  }
-
   @override
   void initState() {
     _middleHeight = WritePostPage.MaxHeight * 0.5;
@@ -107,6 +79,18 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
     super.initState();
   }
 
+  void send() async {
+    int statusCode = await writePost(_group.id, _tags, _user.token, _title, _desc);
+
+    if (statusCode != 200) {
+      _sending = false;
+      print("error occured: " + statusCode.toString());
+      return;
+    }
+
+    Navigator.pop(_context);
+  }
+
   @override
   Widget build(BuildContext context) {
     _context = context;
@@ -131,9 +115,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
               color: Colors.black,
               func: () {
                 if (!_sending) {
-                  setState(() {
-                    _sending = true;
-                  });                  
+                  _sending = true;   
                   send();
                 }
               }

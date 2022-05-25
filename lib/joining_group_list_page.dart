@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/group_list_view.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'package:http/http.dart' as http;
 
 class JoiningGroupListPage extends StatefulWidget {
@@ -19,6 +20,8 @@ class JoiningGroupListPage extends StatefulWidget {
 
 class _JoiningGroupListPageState extends State<JoiningGroupListPage> {
   Map _receivedData = {};
+
+  late KeyValueStorage _storage;
 
   late User _user;
   late Subscriptions _subs;
@@ -35,17 +38,41 @@ class _JoiningGroupListPageState extends State<JoiningGroupListPage> {
   @override
   void didChangeDependencies() {
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-    _user = _receivedData["user"];
-    _subs = _receivedData["subs"];
+    _storage = _receivedData["stroage"];
+    _user = User.fromJson(jsonDecode(_storage.get("user")));
 
-    getGroups((list) {
+    generateSubs();
+
+    super.didChangeDependencies();
+  }
+
+  void generateSubs() async {
+    int statusCode = await getSubscriptions(
+      _user.id,
+      (data) {
+        _subs = data;
+      }
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      return;
+    }
+
+    _storage.set("subs", _subs.toString());
+
+    generateGroups();
+  }
+
+  void generateGroups() async {
+    int statusCode = await getGroups((list) {
       setState(() {
         _groups = list;
         _loaded = true;
       });
     });
-
-    super.didChangeDependencies();
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
   }
 
   @override
@@ -77,8 +104,7 @@ class _JoiningGroupListPageState extends State<JoiningGroupListPage> {
                 context, "/group_details",
                 arguments: { 
                   "index": index,
-                  "user": _user,
-                  "subs": _subs,
+                  "storage": _storage,
                   "group": _subs.groups[index]
                 }
               );

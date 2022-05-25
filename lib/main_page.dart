@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/title_anim.dart';
 import 'package:flutter_application_learning/components/tab_btn_anim.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
@@ -8,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_application_learning/post_list_page.dart';
 import 'package:flutter_application_learning/my_page.dart';
 import 'package:flutter_application_learning/entries/tab_btn_model.dart';
-import 'package:flutter_application_learning/globals.dart' as globals;
+import 'package:flutter_application_learning/components/globals.dart' as globals;
 
 class MainPage extends StatefulWidget {
   static const double TabButtonMaxSize = 52;
@@ -54,13 +57,15 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
 
-    User user = _receivedData["user"];
-    Subscriptions subs = _receivedData["subs"];
+    KeyValueStorage storage = _receivedData["storage"];
+
+    User user = User.fromJson(jsonDecode(storage.get("user")));
+    Subscriptions subs = Subscriptions.fromJson(jsonDecode(storage.get("subs")));
 
     final List<Widget> pageList = [
-      PostListPage(user: user, subs: subs, context: context, pageController: _pageController), 
-      GroupListPage(user: user, subs: subs, context: context, pageController: _pageController), 
-      MyPage(user: user, subs: subs, context: context, pageController: _pageController)
+      PostListPage(storage: storage, context: context, pageController: _pageController), 
+      GroupListPage(storage: storage, context: context, pageController: _pageController), 
+      MyPage(storage: storage, context: context, pageController: _pageController)
     ];
 
     return MaterialApp(
