@@ -1,4 +1,6 @@
+import 'package:flutter_application_learning/components/comment.dart';
 import 'package:flutter_application_learning/entries/group.dart';
+import 'package:flutter_application_learning/entries/join_request.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'dart:convert';
@@ -147,6 +149,104 @@ Future<int> withdraw(String token) async {
     Uri.parse(uri.toString()),
     headers: { "Content-Type": "application/json", "Authorization": token }
   );
+  return response.statusCode;
+}
 
+Future<int> searchPosts(String requirement, String query, void Function(List<Post> list) onFinished) async {
+  final params = {
+    "requirement": requirement,
+    "query": query
+  };
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/user");
+  var response = await http.get(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json" },
+  );
+  List<Post> posts = [];
+  List<dynamic> jsonArray = jsonDecode(response.body);
+  for (var json in jsonArray) {
+    posts.add(Post.fromJson(json));
+  }
+  onFinished(posts);
+  return response.statusCode;
+}
+
+Future<int> getGroupPosts(int groupId, void Function(List<Post> list) onFinished) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/");
+  uri.write(groupId);
+  uri.write("/post");
+  var response = await http.get(Uri.parse(uri.toString()));
+  if (response.statusCode != 200) {
+    return response.statusCode;
+  }
+  dynamic jsonArray = jsonDecode(response.body);    
+  List<Post> posts = [];
+  for (var json in jsonArray) {
+    posts.add(Post.fromJson(json));
+  }
+  onFinished(posts);
+  return response.statusCode;
+}
+
+Future<int> getReplies(String token, int teamId, int postId, void Function(List<Comment> list) onFinished) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId);
+  uri.write("/post/"); uri.write(postId); uri.write("/comment");
+  var response = await http.get(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json", "Authorization": token }
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;
+  }
+  dynamic jsonArray = jsonDecode(response.body);  
+  List<Comment> comments = [];
+  for (var json in jsonArray) {
+    comments.add(Comment.fromJson(json));
+  }
+  onFinished(comments);
+  return response.statusCode;
+}
+
+Future<int> addReply(String token, int teamId, int postId, String reply) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId);
+  uri.write("/post/"); uri.write(postId); uri.write("/comment");
+  var response = await http.post(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json", "Authorization": token },
+    body: jsonEncode({
+      "description": reply
+    })
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;
+  }
+  return response.statusCode;
+}
+
+Future<int> getJoinRequests(String token, int teamId, void Function(List<JoinRequest> list) onFinished) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId); uri.write("/join"); 
+  var response = await http.get(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json", "Authorization": token },
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;  
+  }
+  dynamic jsonArray = jsonDecode(response.body);  
+  List<JoinRequest> requests = [];
+  for (var json in jsonArray) {
+    requests.add(JoinRequest.fromJson(json));
+  }
+  onFinished(requests);
   return response.statusCode;
 }

@@ -9,6 +9,7 @@ class Group {
   final String filePath;
   final bool type;
   final int hostId;
+  final String hostName;
   final bool closed;
 
   Group({
@@ -21,6 +22,7 @@ class Group {
     required this.filePath,
     required this.type,
     required this.hostId,
+    required this.hostName,
     required this.closed});
 
   Group.fromJson(dynamic json) 
@@ -33,6 +35,7 @@ class Group {
       filePath = json["filePath"] ?? "assets/images/creeper_128x128.jpg",
       type = json["type"] == "PRIVATE",
       hostId = json["hostId"],
+      hostName = json["hostName"],
       closed = json["closed"];
 
   @override
@@ -59,7 +62,8 @@ class Group {
     sb.write(", \"filePath\": \""); sb.write(filePath);
     sb.write("\", \"type\": \""); sb.write(type ? "PRIVATE" : "PUBLIC");
     sb.write("\", \"hostId\": "); sb.write(hostId);
-    sb.write(", \"closed\": "); sb.write(closed.toString());
+    sb.write(", \"hostName\": \""); sb.write(hostName);
+    sb.write("\", \"closed\": "); sb.write(closed.toString());
     sb.write("}");
     return sb.toString();
   }

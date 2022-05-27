@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
 2-5 o
 2-6 x - 참가 요청 수락
 2-7 x -     "    거절
-2-8 x - 팀 검색
+2-8 ? - 팀 검색(get body 지원 안 함)
 2-9 x - 팀 수정
 
 [ Post ]
@@ -40,9 +40,9 @@ class MyApp extends StatelessWidget {
 3-2 o
 3-3 o
 3-4 x - 특정 글 읽기
-3-5 x - 댓글 작성
-3-6 x - 댓글 읽기
-3-7 x - 글 검색
+3-5 o - 댓글 작성
+3-6 o - 댓글 읽기
+3-7 ? - 글 검색(get body 지원 안 함)
 3-8 x - 팀 글 검색
 3-9 x - 유저 글 검색
  */

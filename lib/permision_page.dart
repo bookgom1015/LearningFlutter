@@ -6,25 +6,18 @@ class PermisionPage extends StatefulWidget {
   const PermisionPage({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _PermisionPageStaet();
+  State<StatefulWidget> createState() => _PermisionPageState();
 }
 
-class _PermisionPageStaet extends State<PermisionPage> {
+class _PermisionPageState extends State<PermisionPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: createAppBar(
-          height: globals.AppBarHeight,
-          title: "관리자 페이지",
-          backgroundColor: globals.BackgroundColor
-        ),
-        body: Container(
-          decoration: const BoxDecoration(
-            color: globals.BackgroundColor
-          ),
-        ),
+          height: globals.AppBarHeight, 
+          title: "참가 요청 목록"),
       ),
     );
-  }
+  }  
 }

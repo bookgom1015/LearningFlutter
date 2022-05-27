@@ -94,14 +94,11 @@ Widget createGroupListView({
                               color: globals.FocusedForeground
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            groups[index].hostId.toString(),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: globals.FocusedForeground
-                            ),
-                          ),
+                          const SizedBox(width: 5),
+                          Icon(
+                            groups[index].type ? Icons.lock : Icons.lock_open,
+                            size: 12
+                          )
                         ],
                       )
                     ),
@@ -123,3 +120,7 @@ Widget createGroupListView({
     },
   );
 }
+
+//Future<int> getComments() {
+//
+//}

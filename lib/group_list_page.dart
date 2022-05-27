@@ -29,14 +29,14 @@ class GroupListPage extends StatefulWidget {
 class _GroupListPageState extends State<GroupListPage> {
   List<Group> _groups = [];
 
-  final List<String> _dropDownMenuItemList = [
-    "제목", "내용", "태그"
-  ];
-
   final FocusNode _searchBarFocusNode = FocusNode();
   final TextEditingController _searchBarController = TextEditingController();
 
   bool _loaded = false;
+  bool _clicked = false;
+
+  String _requirement = "";
+  String _query = "";
 
   late User _user;
   late Subscriptions _subs;
@@ -84,6 +84,16 @@ class _GroupListPageState extends State<GroupListPage> {
     }
   }
 
+  void onSearchButtonClicked() async {
+    print(_requirement);
+    print(_query);
+    _clicked = false;
+    _loaded = true;
+    //if (statusCode != 200) {
+    //  print("error occured: " + statusCode.toString());
+    //}
+  }
+
   @override
   Widget build(BuildContext _) {
     final double deviceWidth = MediaQuery.of(context).size.width;
@@ -98,12 +108,26 @@ class _GroupListPageState extends State<GroupListPage> {
             SearchBar(
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
-              dropDownMenuItemList: _dropDownMenuItemList,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               margin: const EdgeInsets.fromLTRB(0, 0, 0, 1),
               dropdownColor: globals.DropdownColor,
               focusedColor: globals.FocusedForeground,
               unfocusedColor: globals.UnfocusedForeground,
+              onTap: () {
+                if (!_clicked) {
+                  _clicked = true;
+                  setState(() {
+                    _loaded = false;
+                  });
+                  onSearchButtonClicked();
+                }
+              },
+              onChanged: (String value) {
+                _query = value;
+              },
+              onDropdownChanged: (String value) {
+                _requirement = value;
+              }
             ),
             Expanded(
               child: _loaded ? Stack(

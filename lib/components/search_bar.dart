@@ -1,43 +1,54 @@
 import 'package:flutter/material.dart';
 
 class SearchBar extends StatefulWidget {
+  static const Map<String, String> DropDownMenuItems = {
+    "제목": "title", "태그": "tag", "내용": "description"
+  };
+
   final FocusNode focusNode;
   final TextEditingController controller;
-  final List<String> dropDownMenuItemList;
   EdgeInsets margin;
   EdgeInsets padding;
   Color dropdownColor;
   Color focusedColor;
   Color unfocusedColor;
+  void Function()? onTap;
+  void Function(String value)? onChanged;
+  void Function(String value)? onDropdownChanged;
 
   SearchBar({
     Key? key, 
     required this.focusNode,
     required this.controller,
-    required this.dropDownMenuItemList,
     required this.dropdownColor,
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
     this.focusedColor = Colors.black,
-    this.unfocusedColor = Colors.grey}) : super(key: key);
+    this.unfocusedColor = Colors.grey,
+    this.onTap,
+    this.onChanged,
+    this.onDropdownChanged}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchBarState();
 }
 
 class _SearchBarState extends State<SearchBar> {
-  bool searchBarFocused = false;
-  late String dropDownValue;
+  bool _searchBarFocused = false;
+  late String _currKey;
 
   @override
   void initState() {
     widget.focusNode.addListener(() {
       setState(() {
-        searchBarFocused = widget.focusNode.hasFocus;
+        _searchBarFocused = widget.focusNode.hasFocus;
       });
     });    
 
-    dropDownValue = widget.dropDownMenuItemList[0];
+    _currKey = SearchBar.DropDownMenuItems.keys.first;
+    if (widget.onDropdownChanged != null) {
+      widget.onDropdownChanged!(SearchBar.DropDownMenuItems.values.first);
+    }
     super.initState();
   }
 
@@ -52,6 +63,11 @@ class _SearchBarState extends State<SearchBar> {
         style: TextStyle(
           color: widget.focusedColor
         ),
+        onChanged: (value) {
+          if (widget.onChanged != null) {
+            widget.onChanged!(value);
+          }
+        },
         decoration: InputDecoration(
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: widget.unfocusedColor)
@@ -60,7 +76,7 @@ class _SearchBarState extends State<SearchBar> {
             borderSide: BorderSide(color: widget.focusedColor)
           ),
           prefixIcon: DropdownButton(
-            value: dropDownValue,            
+            value: _currKey,            
             style: TextStyle(
               color: widget.focusedColor,
             ),
@@ -75,10 +91,14 @@ class _SearchBarState extends State<SearchBar> {
             dropdownColor: widget.dropdownColor,
             onChanged: (String? newValue) {
               setState(() {
-                dropDownValue = newValue!;
+                _currKey = newValue!;
               });
+              if (widget.onDropdownChanged != null) {
+                String vvv = SearchBar.DropDownMenuItems[_currKey]!;
+                widget.onDropdownChanged!(SearchBar.DropDownMenuItems[_currKey]!);
+              }
             },
-            items: widget.dropDownMenuItemList.map<DropdownMenuItem<String>>((String value) {
+            items: SearchBar.DropDownMenuItems.keys.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(                
                 value: value,
                 child: Text(value)
@@ -86,9 +106,12 @@ class _SearchBarState extends State<SearchBar> {
               }
             ).toList(),
           ),
-          suffixIcon: Icon(
-            Icons.search,
-            color: searchBarFocused ? widget.focusedColor : widget.unfocusedColor
+          suffixIcon: GestureDetector(
+            onTap: widget.onTap,
+            child: Icon(
+              Icons.search,
+              color: _searchBarFocused ? widget.focusedColor : widget.unfocusedColor
+            )
           )
         ),            
       )

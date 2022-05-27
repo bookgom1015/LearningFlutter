@@ -66,6 +66,11 @@ const Color EditAccountUnderlineUnfocusedColor = Color.fromARGB(255, 209, 209, 2
 const Color EditAccountUnderlineFocusedDangerColor = Colors.red;
 const Color EditAccountUnderlineUnfocusedDangerColor = Color.fromARGB(255, 158, 11, 11);
 
+const Color AddRepliesButtonBackgroundColors1 = Color.fromARGB(255, 228, 228, 228);
+const Color AddRepliesButtonBackgroundColors2 = Color.fromARGB(255, 245, 244, 244);
+
+
+
 
 
 

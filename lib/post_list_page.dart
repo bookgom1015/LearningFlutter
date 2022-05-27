@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
@@ -6,10 +5,7 @@ import 'package:flutter_application_learning/components/loading.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/components/search_bar.dart';
-import 'package:flutter_application_learning/entries/subscriptions.dart';
-import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
-import 'package:http/http.dart' as http;
 
 class PostListPage extends StatefulWidget {
   final KeyValueStorage storage;
@@ -29,14 +25,14 @@ class PostListPage extends StatefulWidget {
 class _PostListPageState extends State<PostListPage> {
   List<Post> _posts = [];
 
-  final List<String> _dropDownMenuItemList = [
-    "제목", "내용", "태그"
-  ];
-
   final FocusNode _searchBarFocusNode = FocusNode();
   final TextEditingController _searchBarController = TextEditingController();
 
   bool _loaded = false;
+  bool _clicked = false;
+
+  String _requirement = "";
+  String _query = "";
 
   @override
   void initState() {
@@ -78,6 +74,23 @@ class _PostListPageState extends State<PostListPage> {
       print("error occured: " + statusCode.toString());
     }
   }
+
+  void onSearchButtonClicked() async {
+    int statusCode = await searchPosts(
+      _requirement, 
+      _query, 
+      (list) {
+        setState(() {
+          _posts = list;
+          _loaded = true;
+        });
+        _clicked = false;
+      }
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -93,12 +106,26 @@ class _PostListPageState extends State<PostListPage> {
             SearchBar(
               focusNode: _searchBarFocusNode,
               controller: _searchBarController,
-              dropDownMenuItemList: _dropDownMenuItemList,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               margin: const EdgeInsets.fromLTRB(0, 0, 0, 1),
               dropdownColor: globals.DropdownColor,
               focusedColor: globals.FocusedForeground,
               unfocusedColor: globals.UnfocusedForeground,
+              onTap: () {
+                if (!_clicked) {
+                  _clicked = true;
+                  setState(() {
+                    _loaded = false;
+                  });
+                  onSearchButtonClicked();
+                }
+              },
+              onChanged: (String value) {
+                _query = value;
+              },
+              onDropdownChanged: (String value) {
+                _requirement = value;
+              },
             ),
             Expanded(
               child: _loaded ? Stack(
@@ -114,6 +141,7 @@ class _PostListPageState extends State<PostListPage> {
                         widget.context, "/post",
                         arguments: {
                           "index": index,
+                          "storage": widget.storage,
                           "post": _posts[index],
                         }
                       );

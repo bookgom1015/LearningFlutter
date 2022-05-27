@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/add_group.dart';
-import 'package:flutter_application_learning/permision.page.dart';
+import 'package:flutter_application_learning/add_reply_page.dart';
+import 'package:flutter_application_learning/group_management.page.dart';
+import 'package:flutter_application_learning/permision_page.dart';
 import 'package:flutter_application_learning/signup_page.dart';
 import 'package:flutter_application_learning/edit_account_page.dart';
 import 'package:flutter_application_learning/edit_profile_page.dart';
@@ -27,6 +29,8 @@ MaterialApp createRouter() {
       '/joining_group_list': (context) => const JoiningGroupListPage(),
       '/withdrawal': (context) => const WithdrawalPage(),
       '/add_group': (context) => const AddGroupPage(),
+      '/group_manage': (context) => const GroupManagementPage(),
+      '/add_reply': (context) => const AddReplyPage(),
       '/permision': (context) => const PermisionPage(),
     },
   );

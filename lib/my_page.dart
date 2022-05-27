@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
+import 'package:flutter_application_learning/components/mene_list.dart';
 import 'package:flutter_application_learning/entries/menu.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
@@ -34,6 +35,8 @@ class _MyPageState extends State<MyPage> {
 
   @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
+
     _user = User.fromJson(jsonDecode(widget.storage.get("user")));
     _subs = Subscriptions.fromJson(jsonDecode(widget.storage.get("subs")));
     _menus = [
@@ -76,7 +79,6 @@ class _MyPageState extends State<MyPage> {
         }
       )
     ];
-    super.didChangeDependencies();
   }
 
   @override
@@ -94,7 +96,15 @@ class _MyPageState extends State<MyPage> {
                   if (index == 0) {
                     return profileWidget();
                   }
-                  return menuWidget(index - 1);
+                  return createMenuListView(
+                    context: widget.context, 
+                    menus: _menus,
+                    index: index - 1,
+                    bottomRightColor: globals.ListViewItemBackgroundColors1,
+                    topLeftColor: globals.ListViewItemBackgroundColors2,
+                    shadowColor: globals.ShadowColor,
+                    borderRadius: globals.DefaultRadius
+                  );
                 }
               )
             )
@@ -196,66 +206,6 @@ class _MyPageState extends State<MyPage> {
             )
           )
         ]
-      )
-    );
-  }
-
-  Widget menuWidget(int index) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          widget.context, 
-          _menus[index].routeName,
-          arguments: _menus[index].arguments
-        ).then((value) {
-          if (_menus[index].then != null) {
-            _menus[index].then!();
-          }
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.bottomRight,
-            end: Alignment.topLeft,
-            stops: [
-              0.0,
-              0.5
-            ],
-            colors: [
-              globals.ListViewItemBackgroundColors1,
-              globals.ListViewItemBackgroundColors2,
-            ]
-          ),
-          borderRadius: globals.DefaultRadius,
-          boxShadow: const [
-            BoxShadow(
-              color: globals.ShadowColor,
-              blurRadius: 12,
-              spreadRadius: 1,
-              offset: Offset(6, 8)
-            )
-          ]
-        ),
-        height: 70,
-        child: Row(
-          children: [
-            Icon(
-              _menus[index].icon,
-              size: 24,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              _menus[index].title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600
-              )
-            )
-          ]
-        )
       )
     );
   }

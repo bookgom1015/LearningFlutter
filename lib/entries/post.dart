@@ -1,4 +1,3 @@
-
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 
@@ -25,4 +24,29 @@ class Post {
       desc = json["post"]["description"] ?? "",
       group = Group.fromJson(json["team"]),
       user = User.fromJson(json["user"]);
+
+  @override
+  String toString() {
+    StringBuffer sb = StringBuffer();
+    sb.write("{\"id\": "); sb.write(id);
+    sb.write(", \"title\": \""); sb.write(title);
+    sb.write("\", \"tags\": [");
+    StringBuffer tagSb = StringBuffer();
+    for (String tag in tags) {
+      tagSb.write("\"");
+      tagSb.write(tag);
+      tagSb.write("\"");
+      tagSb.write(",");
+    }
+    String tagStr = tagSb.toString();
+    if (tags.length > 0) {
+      String tagSubstr = tagStr.substring(0, tagStr.length - 1);
+      sb.write(tagSubstr);
+    }
+    sb.write("], \"description\": \""); sb.write(desc);
+    sb.write("\", \"group\": "); sb.write(group.toString());
+    sb.write(", \"user\": "); sb.write(user.toString());
+    sb.write("}");
+    return sb.toString();
+  }
 }

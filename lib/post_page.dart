@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/comment.dart';
+import 'package:flutter_application_learning/components/http_helpers.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/reply.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
+import 'package:flutter_application_learning/entries/user.dart';
 
 class PostPage extends StatefulWidget {
   const PostPage({Key? key}) : super(key: key);
@@ -14,17 +19,9 @@ class PostPage extends StatefulWidget {
 class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin {
   Map _receivedData = {};
 
-  final List<Reply> _replies = [
-    Reply("assets/images/champi_1_256x256.jpg", "중실장", "아리갓또뎃즈웅"),
-    Reply("assets/images/champi_2_256x256.jpg", "저실장", "붕쯔붕쯔"),
-    Reply("assets/images/champi_3_256x256.jpg", "우지챠", "레후~"),
-    Reply("assets/images/champi_1_256x256.jpg", "중실장", "아리갓또뎃즈웅"),
-    Reply("assets/images/champi_2_256x256.jpg", "저실장", "붕쯔붕쯔"),
-    Reply("assets/images/champi_3_256x256.jpg", "우지챠", "레후~"),
-    Reply("assets/images/champi_1_256x256.jpg", "중실장", "아리갓또뎃즈웅"),
-    Reply("assets/images/champi_2_256x256.jpg", "저실장", "붕쯔붕쯔"),
-    Reply("assets/images/champi_3_256x256.jpg", "우지챠", "레후~"),
-  ];
+  late KeyValueStorage _storage;
+  late User _user;
+  late Post _post;
 
   final double _shrinkeddHeight = 50;
   bool isExtended = false;
@@ -33,10 +30,14 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
   late Animation<double> _curveAnimation;
   late Animation<double> _heightAnimation;
 
-  late Post _post;
+  List<Comment> _replies = [];
+
+  bool _repliesIsloaded = false;
 
   @override
   void initState() {
+    super.initState();
+    
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: globals.ShorterAnimDuration)
@@ -51,22 +52,42 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
       begin: 0,
       end: 1
     ).animate(_curveAnimation);
-    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+    _storage = _receivedData["storage"];
+    _user = User.fromJson(jsonDecode(_storage.get("user")));
+    _post = _receivedData["post"];
+
+    generateComments();
   }
 
   @override
   void dispose() {
     super.dispose();
+
     _controller.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-
-    _post = _receivedData["post"];
-
-    super.didChangeDependencies();
+  void generateComments() async {
+    int statusCode = await getReplies(
+      _user.token,
+      _post.group.id, 
+      _post.id, 
+      (list) {
+        setState(() {
+          _replies = list;
+          _repliesIsloaded = true;
+        });
+      }
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
   }
 
   @override
@@ -251,8 +272,8 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
           Expanded(
             child: Stack(
               children: [
-                ListView.builder(
-                  padding: const EdgeInsets.only(top: 20),
+                ListView.builder(                  
+                  padding: const EdgeInsets.only(top: 20, bottom: 90),
                   itemCount: _replies.length,
                   itemBuilder: (_, index) {
                     return Container(
@@ -291,12 +312,12 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
                                 decoration: BoxDecoration(
                                   borderRadius: const BorderRadius.all(Radius.circular(20)),
                                   image: DecorationImage(
-                                    image: AssetImage(_replies[index].image),
+                                    image: AssetImage(_replies[index].user.userProfile.filePath),
                                   )
                                 )
                               ),
                               Text(
-                                _replies[index].name,
+                                _replies[index].user.userNickname,
                                 style: const TextStyle(
                                   color: globals.FocusedForeground
                                 )
@@ -308,7 +329,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
                             child: Container(
                               padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),
                               child: Text(
-                                _replies[index].text,
+                                _replies[index].desc,
                                 style: const TextStyle(
                                   color: globals.FocusedForeground
                                 ),
@@ -319,6 +340,58 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
                       ),
                     );
                   }
+                ),
+                Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: () {
+                      _repliesIsloaded = false;
+                      Navigator.pushNamed(
+                        context, 
+                        "/add_reply",
+                        arguments: {
+                          "storage": _storage,
+                          "post": _post
+                        }
+                      ).then((value) {
+                        setState(() {
+                          generateComments();
+                        });
+                      });
+                    },
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                          stops: [
+                            0.2,
+                            0.6,
+                          ],
+                          colors: [
+                            globals.AddRepliesButtonBackgroundColors1,
+                            globals.AddRepliesButtonBackgroundColors2,
+                          ]
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: globals.ShadowColor,
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: Offset(6, 8)
+                          )
+                        ]
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        size: 64,
+                      )
+                    )                    
+                  )
                 ),
                 Container(
                   width: width,

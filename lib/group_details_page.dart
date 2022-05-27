@@ -9,6 +9,7 @@ import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
 import 'package:flutter_application_learning/entries/group.dart';
+import 'package:flutter_application_learning/entries/join_request.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
 import 'package:flutter_application_learning/entries/user.dart';
@@ -46,7 +47,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   bool _blocked = true;
   bool _unqualified = false;
 
-  List<Post> _posts = [];
+  List<Post> _posts = [];  
 
   bool _loaded = false;
 
@@ -57,7 +58,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   bool _requesting = false;
 
-  int _requestCount = 1;
+  int _requestCount = 0;
+  List<JoinRequest> _requests = [];
 
   @override
   void initState() {
@@ -104,6 +106,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     _group = _receivedData["group"];
 
     qualify();
+    generateJoinRequests();
 
     _deviceWidth = MediaQuery.of(context).size.width;
     _deviceHeight = MediaQuery.of(context).size.height - 
@@ -135,36 +138,42 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     }
   }
 
-  void getPosts() async {
-    StringBuffer uri = StringBuffer();
-      uri.write(globals.SpringUriPath);
-      uri.write("/api/team/");
-      uri.write(_group.id);
-      uri.write("/post");
-
-      var response = await http.get(Uri.parse(uri.toString()));
-
-      if (response.statusCode != 200) {
-        print("error occured: " + response.statusCode.toString());
+  void generateJoinRequests() async {
+    int statusCode = await getJoinRequests(
+      _user.token,
+      _group.id,
+      (list) {
+        _requests = list;
+        setState(() {
+          _requestCount = _requests.length;
+        });
       }
-      else {
-        dynamic jsonArray = jsonDecode(response.body);
-        
-        List<Post> posts = [];
-        for (var json in jsonArray) {
-          posts.add(Post.fromJson(json));
-        }
-        
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
+  }
+
+  void getPosts() async {
+    int statusCode = await getGroupPosts(
+      _group.id, 
+      (list) {
         if (mounted) {
           setState(() {
-            _posts = posts;
+            _posts = list;
             _loaded = true;
           });
-        }
+        }  
       }
+    );    
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    } 
   }
 
   void onJoinButtonClicked() async {
+    print(_user.token);
+    print(_group.id.toString());
     int statusCode = await requestToJoin(_user.token, _group.id);
     if (statusCode != 200) {
       print("error occured: " + statusCode.toString());
@@ -314,7 +323,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  _group.hostId.toString(),
+                  _group.hostName,
                   style: const TextStyle(
                     color: globals.FocusedForeground,
                     fontSize: 16
@@ -367,11 +376,15 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         onPressed: () {
           Navigator.pushNamed(
             context,
-            "/permision"
+            "/group_manage",
+            arguments: {
+              "storage": _storage,
+              "requests": _requests
+            }
           );
         },
         icon: const Icon(
-          Icons.alarm_add,
+          Icons.settings,
           size: 28,
         ),
         color: Colors.green[300],
@@ -574,6 +587,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                   context, "/post",
                   arguments: {
                     "index": index,
+                    "storage": _storage,
                     "post": _posts[index],
                   }
                 );
