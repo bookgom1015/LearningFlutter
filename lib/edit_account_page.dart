@@ -21,12 +21,12 @@ class _EditAccountPageState extends State<EditAccountPage> {
   late KeyValueStorage _storage;
   late User _user;
 
-  FocusNode _nicknameFoucusNode = FocusNode();
+  final FocusNode _nicknameFoucusNode = FocusNode();
   String _nickname = "";
   bool _nicknameFocused = false;
   bool _nicknameIsValid = true;
 
-  FocusNode _passwordFoucusNode = FocusNode();
+  final FocusNode _passwordFoucusNode = FocusNode();
   String _password = "";
   bool _passwordFocused = false;
   bool _passwordIsValid = true;
@@ -46,6 +46,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
         _passwordFocused = _passwordFoucusNode.hasFocus;
       });
     });
+
     super.initState();
   }
 
@@ -61,11 +62,12 @@ class _EditAccountPageState extends State<EditAccountPage> {
   @override
   void dispose() {
     super.dispose();
+
     _nicknameFoucusNode.dispose();
     _passwordFoucusNode.dispose();
   }
 
-  void onButtonClicked() async {
+  void onEditButtonClicked() async {
     bool isValid = true;
 
     setState(() {
@@ -124,7 +126,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
               func: () {
                 if (!_clicked) {
                   _clicked = true;   
-                  onButtonClicked();
+                  onEditButtonClicked();
                 }
               }
             )

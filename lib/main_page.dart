@@ -41,15 +41,16 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 
   @override
   void initState() {
+    super.initState();
+    
     _pageController = PageController();
     _title = MainPage.TitleList[0];
-    
-    super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
+
     _pageController.dispose();
   }
 
@@ -84,6 +85,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                     title: _title,
                     model: model
                   ),
+                  toolbarHeight: globals.AppBarHeight,
                 ),
                 bottomNavigationBar: navBarWidget(
                   model: model,

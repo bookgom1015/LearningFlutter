@@ -21,19 +21,34 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
 
   bool _clicked = false;
 
+  late double _deviceWidth;
+  late double _viewHeight;
+
+  late double _boxWidth; 
+  late double _boxHeight;
+
   @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _deviceWidth = MediaQuery.of(context).size.width;
+    _viewHeight = MediaQuery.of(context).size.height 
+                    - MediaQuery.of(context).padding.top // Status bar height
+                    - AppBar().preferredSize.height;
+    _boxWidth = _deviceWidth * 0.8;
+    _boxHeight = _viewHeight * 0.8;
+
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
     _storage = _receivedData["stroage"];
     _user = User.fromJson(jsonDecode(_storage.get("user")));
-
-    super.didChangeDependencies();
   }
 
   void onButtonClicked() async {
-    int statusCode = await withdraw(_user.token);
+    int statusCode = await withdraw(
+      _user.token
+    );
+    _clicked = false;
     if (statusCode != 200) {
-      _clicked = false;
       print("error occured: " + statusCode.toString());
       return;
     }
@@ -49,14 +64,6 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
 
   @override
   Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
-    double viewHeight = MediaQuery.of(context).size.height - 
-      MediaQuery.of(context).padding.top - // Status bar height
-      AppBar().preferredSize.height;
-
-    double boxWidth = deviceWidth * 0.8;
-    double boxHeight = viewHeight * 0.8;
-
     return MaterialApp(
       home: Scaffold(
         appBar: createAppBar(
@@ -70,8 +77,8 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
           ),
           child: Center(
             child: Container(
-              width: boxWidth,
-              height: boxHeight,
+              width: _boxWidth,
+              height: _boxHeight,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 borderRadius: globals.DefaultRadius,

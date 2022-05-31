@@ -3,8 +3,10 @@ import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/mene_list.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
+import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/join_request.dart';
 import 'package:flutter_application_learning/entries/menu.dart';
+import 'package:flutter_application_learning/entries/user.dart';
 
 class GroupManagementPage extends StatefulWidget {
   const GroupManagementPage({Key? key}) : super(key: key);
@@ -17,11 +19,13 @@ class _GroupManagementPageStaet extends State<GroupManagementPage> {
   Map _receivedData = {};
 
   late KeyValueStorage _storage;
-
   late List<JoinRequest> _requests;
   late List<Menu> _menus;
 
+  @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
+
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
     _storage = _receivedData["storage"];
     _requests = _receivedData["requests"];
@@ -32,12 +36,19 @@ class _GroupManagementPageStaet extends State<GroupManagementPage> {
         title: "참가 요청 목록",
         routeName: "/permision",
         arguments: {
-          "stroage": _storage
+          "storage": _storage,
+          "requests": _requests
+        }
+      ),
+      Menu(
+        icon: Icons.edit, 
+        title: "팀 설정 변경", 
+        routeName: "/edit_group_attrib",
+        arguments: {
+          "storage": _storage
         }
       ),
     ];
-
-    super.didChangeDependencies();
   }
 
   @override  

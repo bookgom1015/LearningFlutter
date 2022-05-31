@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/fade_out.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/loading.dart';
@@ -34,31 +35,54 @@ class _PostListPageState extends State<PostListPage> {
   String _requirement = "";
   String _query = "";
 
+  late double _deviceWidth;
+
   @override
   void initState() {
+    super.initState();
+
     widget.pageController.addListener(() {
       if(_searchBarFocusNode.hasFocus) {
-        searchBarLostedFocus();
+        onSearchBarLostedFocus();
       }
     });
-    super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    generatePosts();
     super.didChangeDependencies();
+
+    _deviceWidth = MediaQuery.of(context).size.width;
+
+    generatePosts();    
   }
 
   @override
   void dispose() {
     super.dispose();
+
     _searchBarFocusNode.dispose();
     _searchBarController.dispose();
   }
 
-  // ignore: non_constant_identifier_names
-  void searchBarLostedFocus() {
+  void onSearchButtonClicked() async {
+    int statusCode = await searchPosts(
+      _requirement, 
+      _query, 
+      (list) {
+        setState(() {
+          _posts = list;
+          _loaded = true;
+        });
+      }
+    );
+    _clicked = false;
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
+  }
+
+  void onSearchBarLostedFocus() {
     _searchBarFocusNode.unfocus();
     _searchBarController.clear();
   }
@@ -74,28 +98,9 @@ class _PostListPageState extends State<PostListPage> {
       print("error occured: " + statusCode.toString());
     }
   }
-
-  void onSearchButtonClicked() async {
-    int statusCode = await searchPosts(
-      _requirement, 
-      _query, 
-      (list) {
-        setState(() {
-          _posts = list;
-          _loaded = true;
-        });
-        _clicked = false;
-      }
-    );
-    if (statusCode != 200) {
-      print("error occured: " + statusCode.toString());
-    }
-  }
-  
+ 
   @override
   Widget build(BuildContext context) {
-    final double deviceWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -108,6 +113,7 @@ class _PostListPageState extends State<PostListPage> {
               controller: _searchBarController,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               margin: const EdgeInsets.fromLTRB(0, 0, 0, 1),
+              dropDownMenuItems: const { "제목": "title", "태그": "tag", "내용": "description" },
               dropdownColor: globals.DropdownColor,
               focusedColor: globals.FocusedForeground,
               unfocusedColor: globals.UnfocusedForeground,
@@ -134,7 +140,7 @@ class _PostListPageState extends State<PostListPage> {
                     posts: _posts, 
                     onTab: (index) {
                       if(_searchBarFocusNode.hasFocus) {
-                        searchBarLostedFocus();
+                        onSearchBarLostedFocus();
                       }
 
                       Navigator.pushNamed(
@@ -149,7 +155,7 @@ class _PostListPageState extends State<PostListPage> {
                     height: 180, 
                     titleHeight: 40, 
                     imageSize: 40, 
-                    tagsWidth: deviceWidth, 
+                    tagsWidth: _deviceWidth, 
                     tagsHeight: 20,
                     maxLines: 3,
                     margin: const EdgeInsets.fromLTRB(10, 0, 10, 20),
@@ -157,18 +163,9 @@ class _PostListPageState extends State<PostListPage> {
                     viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110),
                     titleFontSize: 18
                   ),
-                  Container(
-                    height: 30,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          globals.BackgroundColor,
-                          Color.fromARGB(0, 233, 232, 232),
-                        ]
-                      )
-                    ),
+                  cretaeFadeOut(
+                    globals.BackgroundColor,
+                    const Color.fromARGB(0, 233, 232, 232)
                   )
                 ]
               ) : loading()

@@ -4,6 +4,7 @@ import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
+import 'package:flutter_application_learning/components/text_divider.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/user.dart';
@@ -84,28 +85,11 @@ class _AddReplyPageState extends State<AddReplyPage> {
           ),
           child: Column(
             children: [
-              SizedBox(
+              createTextDivider(
+                "댓글",
                 height: 20,
-                child: Row(
-                  children: const [
-                    Text(
-                      "댓글",
-                      style: TextStyle(
-                        color: globals.UnfocusedForeground
-                      )        
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: SizedBox(
-                        height: 1,
-                        child: Divider(
-                          color: globals.UnderlineColor,
-                          thickness: 1,
-                        )
-                      )
-                    )
-                  ]
-                )
+                fontColor: globals.UnfocusedForeground,
+                underlineColor: globals.UnderlineColor
               ),
               Expanded(
                 child: Padding(

@@ -21,9 +21,9 @@ class _SignupPageState extends State<SignupPage> {
   bool _nicknameIsValid = true;
   bool _pwdIsValid = true;
 
-  late FocusNode _idFocusNode;
-  late FocusNode _nicknameFocusNode;
-  late FocusNode _pwdFocusNode;
+  final FocusNode _idFocusNode = FocusNode();
+  final FocusNode _nicknameFocusNode = FocusNode();
+  final FocusNode _pwdFocusNode = FocusNode();
 
   bool _idFocused = false;
   bool _nicknameFocused = false;
@@ -31,9 +31,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   void initState() {
-    _idFocusNode = FocusNode();
-    _nicknameFocusNode = FocusNode();
-    _pwdFocusNode = FocusNode();
+    super.initState();
 
     _idFocusNode.addListener(() {
       setState(() {
@@ -52,8 +50,6 @@ class _SignupPageState extends State<SignupPage> {
         _pwdFocused = _pwdFocusNode.hasFocus;
       });
     });
-
-    super.initState();
   }
 
   @override
@@ -63,6 +59,86 @@ class _SignupPageState extends State<SignupPage> {
     _idFocusNode.dispose();
     _nicknameFocusNode.dispose();
     _pwdFocusNode.dispose();
+  }
+
+  void onSignupButtonClicked() async {
+    bool isValid = true;
+    setState(() {
+      if (_userId == "") {
+      isValid = false;
+      _idIsValid = false;
+      }
+      else {
+        _idIsValid = true;
+      }
+
+      if (_userNickname == "") {
+        isValid = false;
+        _nicknameIsValid = false;
+      }
+      else {
+        _nicknameIsValid = true;
+      }
+
+      if (_userPwd == "") {
+        isValid = false;
+        _pwdIsValid = false;
+      }
+      else {
+        _pwdIsValid = true;
+      }
+    });
+    if (!isValid) { return; }
+
+    StringBuffer uri = StringBuffer();
+    uri.write(globals.SpringUriPath);
+    uri.write("/api/user");
+    
+    var response = await http.post(
+      Uri.parse(uri.toString()),
+      headers: { "Content-Type": "application/json" },
+      body: jsonEncode({
+        "userName": _userId,
+        "userNickname": _userNickname,
+        "userPassword": _userPwd
+      })
+    );
+
+    if (response.statusCode != 200) {
+      // Show error message
+      showDialog(context: context, builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            "에러",
+            style: TextStyle(
+              color: globals.FocusedForeground
+            )
+          ),
+          content: const Text(
+            "몬가... 몬가 잘못됨...",
+            style: TextStyle(
+              color: globals.FocusedForeground
+            )
+          ),
+          backgroundColor: globals.IdentityColor,
+          elevation: 24,
+          shape: RoundedRectangleBorder(
+            borderRadius: globals.DefaultRadius
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      });
+      return;
+    }    
+
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   @override
@@ -170,7 +246,7 @@ class _SignupPageState extends State<SignupPage> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         GestureDetector(
-          onTap: signup,
+          onTap: onSignupButtonClicked,
           child: Container(
             width: 110,
             height: 40,
@@ -199,85 +275,5 @@ class _SignupPageState extends State<SignupPage> {
         )
       ],
     );
-  }
-
-  void signup() async {
-    bool isValid = true;
-    setState(() {
-      if (_userId == "") {
-      isValid = false;
-      _idIsValid = false;
-      }
-      else {
-        _idIsValid = true;
-      }
-
-      if (_userNickname == "") {
-        isValid = false;
-        _nicknameIsValid = false;
-      }
-      else {
-        _nicknameIsValid = true;
-      }
-
-      if (_userPwd == "") {
-        isValid = false;
-        _pwdIsValid = false;
-      }
-      else {
-        _pwdIsValid = true;
-      }
-    });
-    if (!isValid) { return; }
-
-    StringBuffer uri = StringBuffer();
-    uri.write(globals.SpringUriPath);
-    uri.write("/api/user");
-    
-    var response = await http.post(
-      Uri.parse(uri.toString()),
-      headers: { "Content-Type": "application/json" },
-      body: jsonEncode({
-        "userName": _userId,
-        "userNickname": _userNickname,
-        "userPassword": _userPwd
-      })
-    );
-
-    if (response.statusCode != 200) {
-      // Show error message
-      showDialog(context: context, builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            "에러",
-            style: TextStyle(
-              color: globals.FocusedForeground
-            )
-          ),
-          content: const Text(
-            "몬가... 몬가 잘못됨...",
-            style: TextStyle(
-              color: globals.FocusedForeground
-            )
-          ),
-          backgroundColor: globals.IdentityColor,
-          elevation: 24,
-          shape: RoundedRectangleBorder(
-            borderRadius: globals.DefaultRadius
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      });
-      return;
-    }    
-
-    Navigator.pushReplacementNamed(context, '/');
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/join_request.dart';
 import 'package:flutter_application_learning/entries/post.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
+import 'package:flutter_application_learning/entries/user.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_learning/components/globals.dart' as globals;
@@ -23,7 +24,7 @@ Future<int> getSubscriptions(int userId, void Function(Subscriptions data) onFin
   return response.statusCode;
 }
 
-Future<int> getGroups(void Function(List<Group> list) onFinished) async {
+Future<int> getGroups({int? userId, void Function(List<Group> list)? onFinished}) async {
   StringBuffer uri = StringBuffer();
   uri.write(globals.SpringUriPath);
   uri.write("/api/team");
@@ -35,9 +36,14 @@ Future<int> getGroups(void Function(List<Group> list) onFinished) async {
   Map<String, dynamic> json = jsonDecode(response.body);
   List<dynamic> teamJsonArray = json["teams"];
   for (var teamJson in teamJsonArray) {
-    groups.add(Group.fromJson(teamJson));
+    var group = Group.fromJson(teamJson);
+    if (userId != null && userId != group.hostId) continue;
+
+    groups.add(group);
   }
-  onFinished(groups);
+  if (onFinished != null) {
+    onFinished(groups);
+  }
   return response.statusCode;
 }
 
@@ -153,23 +159,50 @@ Future<int> withdraw(String token) async {
 }
 
 Future<int> searchPosts(String requirement, String query, void Function(List<Post> list) onFinished) async {
-  final params = {
-    "requirement": requirement,
-    "query": query
-  };
   StringBuffer uri = StringBuffer();
   uri.write(globals.SpringUriPath);
-  uri.write("/api/user");
-  var response = await http.get(
+  uri.write("/api/post/search");
+  var response = await http.post(
     Uri.parse(uri.toString()),
     headers: { "Content-Type": "application/json" },
+    body: jsonEncode({
+      "requirement": requirement,
+      "query": query
+    })
   );
+  if (response.statusCode != 200) {
+    return response.statusCode;
+  }
   List<Post> posts = [];
   List<dynamic> jsonArray = jsonDecode(response.body);
   for (var json in jsonArray) {
     posts.add(Post.fromJson(json));
   }
   onFinished(posts);
+  return response.statusCode;
+}
+
+Future<int> searchGroups(String requirement, String query, void Function(List<Group> list) onFinished) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/search");
+  var response = await http.post(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json" },
+    body: jsonEncode({
+      "requirement": requirement,
+      "query": query
+    })
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;
+  }
+  List<Group> groups = [];
+  List<dynamic> jsonArray = jsonDecode(response.body);
+  for (var json in jsonArray) {
+    groups.add(Group.fromJson(json));
+  }
+  onFinished(groups);
   return response.statusCode;
 }
 
@@ -248,5 +281,57 @@ Future<int> getJoinRequests(String token, int teamId, void Function(List<JoinReq
     requests.add(JoinRequest.fromJson(json));
   }
   onFinished(requests);
+  return response.statusCode;
+}
+
+Future<int> getUserInfo(int userId, void Function(User data) onFinished) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/user/"); uri.write(userId);
+  var response = await http.get(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json" },
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;  
+  }
+  dynamic json = jsonDecode(response.body);  
+  User user = User.fromJson(json);
+  onFinished(user);
+  return response.statusCode;
+}
+
+Future<int> editGroupAttrib(int teamId, String desc, bool isClosed) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId);
+  var response = await http.put(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json" },
+    body: jsonEncode({
+      "description": desc,
+      "isClosed": isClosed
+    })
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;  
+  }
+  return response.statusCode;
+}
+
+Future<int> getGroupInfo(int teamId, void Function(Group data) onFinished) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId);
+  var response = await http.get(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json" },
+  );
+  if (response.statusCode != 200) {
+    return response.statusCode;  
+  }
+  dynamic json = jsonDecode(response.body);  
+  Group gruop = Group.fromJson(json);
+  onFinished(gruop);
   return response.statusCode;
 }

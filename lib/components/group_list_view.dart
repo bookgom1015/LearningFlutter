@@ -96,7 +96,7 @@ Widget createGroupListView({
                           ),
                           const SizedBox(width: 5),
                           Icon(
-                            groups[index].type ? Icons.lock : Icons.lock_open,
+                            groups[index].type ? Icons.lock_rounded : Icons.lock_open_rounded,
                             size: 12
                           )
                         ],

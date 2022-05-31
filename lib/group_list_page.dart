@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/fade_out.dart';
 import 'package:flutter_application_learning/components/group_list_view.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
@@ -38,66 +39,74 @@ class _GroupListPageState extends State<GroupListPage> {
   String _requirement = "";
   String _query = "";
 
-  late User _user;
-  late Subscriptions _subs;
+  late double _deviceWidth;
 
   @override
   void initState() {
+    super.initState();    
+    
     widget.pageController.addListener(() {
       if(_searchBarFocusNode.hasFocus) {
-        searchBarLostedFocus();
+        onSearchBarLostedFocus();
       }
     });
-    super.initState();    
   }
 
   @override
   void didChangeDependencies() {
-    generateGroups();
-    _user = User.fromJson(jsonDecode(widget.storage.get("user")));
-    _subs = Subscriptions.fromJson(jsonDecode(widget.storage.get("subs")));
     super.didChangeDependencies();
+
+    _deviceWidth = MediaQuery.of(context).size.width;
+
+    generateGroups();
   }
 
   @override
   void dispose() {
     super.dispose();
+
     _searchBarFocusNode.dispose();
     _searchBarController.dispose();
   }
 
-  // ignore: non_constant_identifier_names
-  void searchBarLostedFocus() {
-    _searchBarFocusNode.unfocus();
-    _searchBarController.clear();
-  }
-
-  void generateGroups() async {
-    int statusCode = await getGroups((list) {
-      setState(() {
-        _groups = list;
-        _loaded = true;
-      });
-    });
+  void onSearchButtonClicked() async {
+    int statusCode = await searchGroups(
+      _requirement, 
+      _query, 
+      (list) {
+        setState(() {
+          _groups = list;
+          _loaded = true;
+        });
+      }
+    );
+    _clicked = false;
     if (statusCode != 200) {
       print("error occured: " + statusCode.toString());
     }
   }
 
-  void onSearchButtonClicked() async {
-    print(_requirement);
-    print(_query);
-    _clicked = false;
-    _loaded = true;
-    //if (statusCode != 200) {
-    //  print("error occured: " + statusCode.toString());
-    //}
+  void onSearchBarLostedFocus() {
+    _searchBarFocusNode.unfocus();
+    _searchBarController.clear();
+  }
+
+  void generateGroups() async {
+    int statusCode = await getGroups(
+      onFinished: (list) {
+        setState(() {
+          _groups = list;
+          _loaded = true;
+        });
+      }
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+    }
   }
 
   @override
-  Widget build(BuildContext _) {
-    final double deviceWidth = MediaQuery.of(context).size.width;
-
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -110,6 +119,7 @@ class _GroupListPageState extends State<GroupListPage> {
               controller: _searchBarController,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               margin: const EdgeInsets.fromLTRB(0, 0, 0, 1),
+              dropDownMenuItems: const { "팀명": "name", "태그": "tag" },
               dropdownColor: globals.DropdownColor,
               focusedColor: globals.FocusedForeground,
               unfocusedColor: globals.UnfocusedForeground,
@@ -136,8 +146,9 @@ class _GroupListPageState extends State<GroupListPage> {
                     groups: _groups,
                     onTab: (index) {
                       if(_searchBarFocusNode.hasFocus) {
-                        searchBarLostedFocus();
+                        onSearchBarLostedFocus();
                       }
+
                       Navigator.pushNamed(
                         widget.context, "/group_details",
                         arguments: { 
@@ -147,7 +158,7 @@ class _GroupListPageState extends State<GroupListPage> {
                         }
                       );
                     },
-                    width: deviceWidth,
+                    width: _deviceWidth,
                     height: 70, 
                     tagsHeight: 20, 
                     imageSize: 40,
@@ -156,18 +167,9 @@ class _GroupListPageState extends State<GroupListPage> {
                     descPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
                     viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110)
                   ),
-                  Container(
-                    height: 30,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          globals.BackgroundColor,
-                          Color.fromARGB(0, 233, 232, 232),
-                        ]
-                      )
-                    ),
+                  cretaeFadeOut(
+                    globals.BackgroundColor,
+                    const Color.fromARGB(0, 233, 232, 232)
                   )
                 ]
               ) : loading()

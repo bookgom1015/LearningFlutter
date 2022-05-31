@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class SearchBar extends StatefulWidget {
-  static const Map<String, String> DropDownMenuItems = {
-    "제목": "title", "태그": "tag", "내용": "description"
-  };
+  //static const Map<String, String> DropDownMenuItems = {
+  //  "제목": "title", "태그": "tag", "내용": "description"
+  //};
 
   final FocusNode focusNode;
   final TextEditingController controller;
+  Map<String, String> dropDownMenuItems;
   EdgeInsets margin;
   EdgeInsets padding;
   Color dropdownColor;
@@ -20,6 +21,7 @@ class SearchBar extends StatefulWidget {
     Key? key, 
     required this.focusNode,
     required this.controller,
+    required this.dropDownMenuItems,
     required this.dropdownColor,
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
@@ -45,9 +47,9 @@ class _SearchBarState extends State<SearchBar> {
       });
     });    
 
-    _currKey = SearchBar.DropDownMenuItems.keys.first;
+    _currKey = widget.dropDownMenuItems.keys.first;
     if (widget.onDropdownChanged != null) {
-      widget.onDropdownChanged!(SearchBar.DropDownMenuItems.values.first);
+      widget.onDropdownChanged!(widget.dropDownMenuItems.values.first);
     }
     super.initState();
   }
@@ -94,11 +96,11 @@ class _SearchBarState extends State<SearchBar> {
                 _currKey = newValue!;
               });
               if (widget.onDropdownChanged != null) {
-                String vvv = SearchBar.DropDownMenuItems[_currKey]!;
-                widget.onDropdownChanged!(SearchBar.DropDownMenuItems[_currKey]!);
+                String vvv = widget.dropDownMenuItems[_currKey]!;
+                widget.onDropdownChanged!(widget.dropDownMenuItems[_currKey]!);
               }
             },
-            items: SearchBar.DropDownMenuItems.keys.map<DropdownMenuItem<String>>((String value) {
+            items: widget.dropDownMenuItems.keys.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(                
                 value: value,
                 child: Text(value)

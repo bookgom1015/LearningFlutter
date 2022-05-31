@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/fade_out.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/mene_list.dart';
 import 'package:flutter_application_learning/entries/menu.dart';
@@ -26,7 +27,6 @@ class _MyPageState extends State<MyPage> {
   late List<Menu> _menus;
 
   late User _user;
-  late Subscriptions _subs;
 
   @override
   void initState() {
@@ -38,7 +38,7 @@ class _MyPageState extends State<MyPage> {
     super.didChangeDependencies();
 
     _user = User.fromJson(jsonDecode(widget.storage.get("user")));
-    _subs = Subscriptions.fromJson(jsonDecode(widget.storage.get("subs")));
+    
     _menus = [
       Menu(
         icon: Icons.edit,
@@ -55,7 +55,7 @@ class _MyPageState extends State<MyPage> {
         }
       ),
       Menu(
-        icon: Icons.list_alt,
+        icon: Icons.list,
         title: "참여 중인 팀 목록",
         routeName: "/joining_group_list",
         arguments: {
@@ -63,9 +63,9 @@ class _MyPageState extends State<MyPage> {
         }
       ),
       Menu(
-        icon: Icons.add_reaction,
-        title: "팀 생성",
-        routeName: "/add_group",
+        icon: Icons.list,
+        title: "내 팀 목록",
+        routeName: "/my_group_list",
         arguments: {
           "stroage": widget.storage
         }
@@ -81,32 +81,54 @@ class _MyPageState extends State<MyPage> {
     ];
   }
 
+  void onEditProfileButtonClicked() {
+    Navigator.pushNamed(
+      widget.context, "/edit_profile",
+      arguments: { 
+        "storage": widget.storage
+      }
+    ).then((value) {
+      setState(() {
+        _user = User.fromJson(jsonDecode(widget.storage.get("user")));                      
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: globals.BackgroundColor,
       body: Container(               
         padding: const EdgeInsets.fromLTRB(0, 15, 0, 0), 
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _menus.length + 1,
-                itemBuilder: (_, index) {
-                  if (index == 0) {
-                    return profileWidget();
-                  }
-                  return createMenuListView(
-                    context: widget.context, 
-                    menus: _menus,
-                    index: index - 1,
-                    bottomRightColor: globals.ListViewItemBackgroundColors1,
-                    topLeftColor: globals.ListViewItemBackgroundColors2,
-                    shadowColor: globals.ShadowColor,
-                    borderRadius: globals.DefaultRadius
-                  );
-                }
-              )
+            Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(top: 20),
+                    itemCount: _menus.length + 1,
+                    itemBuilder: (_, index) {
+                      if (index == 0) {
+                        return profileWidget();
+                      }
+                      return createMenuListView(
+                        context: widget.context, 
+                        menus: _menus,
+                        index: index - 1,
+                        bottomRightColor: globals.ListViewItemBackgroundColors1,
+                        topLeftColor: globals.ListViewItemBackgroundColors2,
+                        shadowColor: globals.ShadowColor,
+                        borderRadius: globals.DefaultRadius
+                      );
+                    }
+                  )
+                )
+              ]
+            ),
+            cretaeFadeOut(
+              globals.BackgroundColor,
+              const Color.fromARGB(0, 233, 232, 232)
             )
           ]
         )
@@ -189,19 +211,7 @@ class _MyPageState extends State<MyPage> {
               alignment: Alignment.centerRight,
               child: IconButton(
                 icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.pushNamed(
-                    widget.context, "/edit_profile",
-                    arguments: { 
-                      "storage": widget.storage
-                    }
-                  ).then((value) {
-                    // The code below is for rebuilding this page.
-                    setState(() {
-                      _user = User.fromJson(jsonDecode(widget.storage.get("user")));
-                    });
-                  });
-                },
+                onPressed: onEditProfileButtonClicked,
               )
             )
           )

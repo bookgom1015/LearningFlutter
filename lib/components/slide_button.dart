@@ -6,13 +6,21 @@ import 'package:flutter_application_learning/components/string_helper.dart';
 class SlideButton extends StatefulWidget {  
   final double width;
   final double height;
+  final String firstWord;
+  final String secondWord;
+  final IconData firstIcon;
+  final IconData secondIcon;
   final void Function(bool) onChanged;
 
   const SlideButton({
     Key? key,
     required this.width,
     required this.height,
-    required this.onChanged}) : super(key: key);
+    required this.onChanged,
+    required this.firstWord,
+    required this.secondWord,
+    required this.firstIcon,
+    required this.secondIcon}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SlidedButtonState();
@@ -65,8 +73,8 @@ class _SlidedButtonState extends State<SlideButton> with SingleTickerProviderSta
       end: const Color.fromARGB(255, 187, 105, 58)
     ).animate(_curveAnimation);
     
-    _publicTextSize = calcTextSize("Public", _textStyle);
-    _privateTextSize = calcTextSize("Private", _textStyle);
+    _publicTextSize = calcTextSize(widget.firstWord, _textStyle);
+    _privateTextSize = calcTextSize(widget.secondWord, _textStyle);
 
     _topPubTextPos = widget.height * 0.5 - _publicTextSize.height * 0.5;
     _topPrivateTextPos = widget.height * 0.5 - _privateTextSize.height * 0.5;
@@ -113,7 +121,7 @@ class _SlidedButtonState extends State<SlideButton> with SingleTickerProviderSta
                   top: _topPubTextPos,
                   right: _rightPubTextPos * (1 - _animation.value) + -_publicTextSize.width * _animation.value,
                   child: Text(
-                    "Public",
+                    widget.firstWord,
                     style: _textStyle
                   )
                 ),
@@ -121,7 +129,7 @@ class _SlidedButtonState extends State<SlideButton> with SingleTickerProviderSta
                   top: _topPrivateTextPos,
                   left: _rightPrivateTextPos * _animation.value + -_privateTextSize.width * (1 - _animation.value),
                   child: Text(
-                    "Private",
+                    widget.secondWord,
                     style: _textStyle
                   )
                 ),
@@ -156,7 +164,7 @@ class _SlidedButtonState extends State<SlideButton> with SingleTickerProviderSta
                         )
                       ),
                       child: Icon(
-                        _controller.isCompleted ? Icons.lock : Icons.lock_open,
+                        _controller.isCompleted ? widget.secondIcon : widget.firstIcon,
                         size: 28,
                       )
                     )

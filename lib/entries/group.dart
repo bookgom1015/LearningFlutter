@@ -3,7 +3,7 @@ class Group {
   final int id;
   final String name;
   final List<String> tags;
-  final String desc;
+  late String desc;
   final String fileName;
   final int fileSize;
   final String filePath;

@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_learning/components/add_button.dart';
 import 'package:flutter_application_learning/components/alert_dialog.dart';
+import 'package:flutter_application_learning/components/fade_out.dart';
 import 'package:flutter_application_learning/components/heart_anim.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/loading.dart';
+import 'package:flutter_application_learning/components/locked.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/post_list_view.dart';
 import 'package:flutter_application_learning/components/star_anim.dart';
@@ -49,13 +52,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   List<Post> _posts = [];  
 
-  bool _loaded = false;
+  bool _subsLoaded = false;
+  bool _postsLoaded = false;
 
-  double _deviceWidth = 0;
-  double _deviceHeight = 0;
+  late double _deviceWidth;
+  late double _deviceHeight;
 
   bool _collapsed = false;
-
   bool _requesting = false;
 
   int _requestCount = 0;
@@ -63,6 +66,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
 
   @override
   void initState() {
+    super.initState();
+
     _middleHeight = _maxHeight * 0.5;
     _currHeight = _maxHeight;
 
@@ -94,31 +99,50 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         }
       });
     });
-    super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-    _storage = _receivedData["storage"];
-    _user = User.fromJson(jsonDecode(_storage.get("user")));
-    _subs = Subscriptions.fromJson(jsonDecode(_storage.get("subs")));
-    _group = _receivedData["group"];
-
-    qualify();
-    generateJoinRequests();
+    super.didChangeDependencies();
 
     _deviceWidth = MediaQuery.of(context).size.width;
-    _deviceHeight = MediaQuery.of(context).size.height - 
-      MediaQuery.of(context).padding.top - // Status bar height
-      AppBar().preferredSize.height;
+    _deviceHeight = MediaQuery.of(context).size.height
+                      - MediaQuery.of(context).padding.top // Status bar height
+                      - AppBar().preferredSize.height;
 
-    super.didChangeDependencies();
+    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+    _storage = _receivedData["storage"];
+    _group = _receivedData["group"];
+    _user = User.fromJson(jsonDecode(_storage.get("user")));
+
+    _storage.set("group", _group.toString());
+    
+    generateSubs();
+    
+    if (_user.id == _group.id) {
+      generateJoinRequests();
+    }
   }
 
   @override void dispose() {
     super.dispose();
+    
     _controller.dispose();
+  }
+
+  void onJoinButtonClicked() async {
+    int statusCode = await requestToJoin(
+      _user.token, 
+      _group.id
+    );
+    _requesting = false;
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      return;
+    }
+
+    generateSubs();
+    showAlertDialog(context: context, text: "참여 요청이 전송되었습니다.");
   }
 
   void qualify() {
@@ -130,12 +154,52 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
         break;
       }
     }
-    if (isMatched || !_group.type) {
+    
+    setState(() {
+      if (isMatched || !_group.type) {
       _blocked = false; 
+      }
+      if (!_blocked && !isMatched) {
+        _unqualified = true;
+      }
+    });
+
+    if (!_blocked) {
+      generatePosts();   
     }
-    if (!_blocked && !isMatched) {
-      _unqualified = true;
+  }
+
+  void generateGroup() async {
+    int statusCode = await getGroupInfo(
+      _group.id,
+      (data) {
+        setState(() {
+          _group = data;
+        });
+        _storage.set("group", _group.toString());
+      }
+    );
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      return;
     }
+  }
+
+  void generateSubs() async {
+    int statusCode = await getSubscriptions(
+      _user.id,
+      (data) {
+        _subs = data;
+        _subsLoaded = true;
+      }
+    );
+    _requesting = false;
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      return;
+    }
+
+    qualify();
   }
 
   void generateJoinRequests() async {
@@ -154,14 +218,14 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     }
   }
 
-  void getPosts() async {
+  void generatePosts() async {
     int statusCode = await getGroupPosts(
       _group.id, 
       (list) {
         if (mounted) {
           setState(() {
             _posts = list;
-            _loaded = true;
+            _postsLoaded = true;
           });
         }  
       }
@@ -171,43 +235,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     } 
   }
 
-  void onJoinButtonClicked() async {
-    print(_user.token);
-    print(_group.id.toString());
-    int statusCode = await requestToJoin(_user.token, _group.id);
-    if (statusCode != 200) {
-      print("error occured: " + statusCode.toString());
-      _requesting = false;
-      return;
-    }
-
-    statusCode = await getSubscriptions(
-      _user.id,
-      (data) {
-        _subs = data;
-      }
-    );
-    if (statusCode != 200) {
-      print("error occured: " + statusCode.toString());
-      _requesting = false;
-      return;
-    }
-
-    _storage.set("subs", _subs.toString());
-    qualify();
-
-    _requesting = false;
-    showAlertDialog(context: context, text: "참여 요청이 전송되었습니다.");
-  }
-
   @override
-  Widget build(BuildContext context) {
-    if (!_blocked) {
-      getPosts();   
-    }
-
-    final double deviceWidth = MediaQuery.of(context).size.width;
-    
+  Widget build(BuildContext context) {    
     return MaterialApp(
       home: Scaffold(
         appBar: createAppBar(
@@ -230,44 +259,50 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(
-                            width: _deviceWidth,
-                            height: _currHeight,
-                            child: FittedBox(
-                              fit: BoxFit.none,
-                              clipBehavior: Clip.hardEdge,
-                              child: Column(
-                                children: [
-                                  SizedBox(
-                                    width: _deviceWidth,
-                                    height: _maxHeight,
-                                    child: Row(
-                                      children: [
-                                        descWidget(tag: "group_" + _receivedData['index'].toString()),
-                                        buttonsWidget()
-                                      ],
-                                    ),
-                                  ),
-                                ]
-                              )
-                            )
-                          ),
+                          topPanelWidget(),
                           const SizedBox(height: 10),
-                          gestureBarWidget(
-                            width: deviceWidth,
-                            height: 30
-                          ),
-                          postsWidget(
-                            width: deviceWidth, 
-                            height: 180
-                          )
+                          gestureBarWidget(_deviceWidth, 30),
+                          postsWidget(_deviceWidth, 180)
                         ],
                       );
                     }
                   )
                 )
               ),
-              addPostButtonWidget()
+              Positioned(
+                bottom: 30,
+                right: 30,
+                child: createAddButton(
+                    onTap: () {
+                    if (_blocked) return;          
+                    if (_unqualified) {
+                      showAlertDialog(
+                        context: context,
+                        text: "팀에 소속되어 있지 않습니다. \n글을 작성하시려면 먼저 팀에 가입해주세요.",
+                        fontColor: globals.FocusedForeground,
+                        backgroundColor: globals.DialogBackgroundColor,
+                        borderRadius: globals.DefaultRadius
+                      );
+                      return;
+                    }
+                    Navigator.pushNamed(
+                      context, "/write_post", 
+                      arguments: {
+                        "storage": _storage,
+                        "user": _user,
+                      }
+                    ).then((value) {
+                      if (_user.id == _group.id) {
+                        generateJoinRequests();
+                      }
+                    });
+                  },
+                  backgroundColors1: globals.AddPostButtonBackgroundColors1,
+                  backgroundColors2: globals.AddPostButtonBackgroundColors2,
+                  shadowColor: globals.ShadowColor,
+                  disabled: _blocked
+                )      
+              )
             ]
           )
         )
@@ -275,79 +310,169 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget descWidget({required String tag}) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.bottomRight,
-            end: Alignment.topLeft,
-            stops: [
-              0.0,
-              0.5
-            ],
-            colors: [
-              globals.ListViewItemBackgroundColors1,
-              globals.ListViewItemBackgroundColors2,
-            ]
-          ),
-          borderRadius: globals.DefaultRadius,
-          boxShadow: const [
-            BoxShadow(
-              color: globals.ShadowColor,
-              blurRadius: 12,
-              spreadRadius: 1,
-              offset: Offset(6, 8)
-            )
-          ]
-        ),
+  Widget topPanelWidget() {
+    return SizedBox(
+      width: _deviceWidth,
+      height: _currHeight,
+      child: FittedBox(
+        fit: BoxFit.none,
+        clipBehavior: Clip.hardEdge,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Hero(
-                  tag: tag,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: AssetImage(_group.filePath),
-                      )                              
+            SizedBox(
+              width: _deviceWidth,
+              height: _maxHeight,
+              child: Row(
+                children: [
+                  // Descriptions
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(10, 10, 0, 0),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                          stops: [
+                            0.0,
+                            0.5
+                          ],
+                          colors: [
+                            globals.ListViewItemBackgroundColors1,
+                            globals.ListViewItemBackgroundColors2,
+                          ]
+                        ),
+                        borderRadius: globals.DefaultRadius,
+                        boxShadow: const [
+                          BoxShadow(
+                            color: globals.ShadowColor,
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: Offset(6, 8)
+                          )
+                        ]
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Hero(
+                                tag: "group_" + _receivedData['index'].toString(),
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      image: AssetImage(_group.filePath),
+                                    )                              
+                                  )
+                                )
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                _group.hostName,
+                                style: const TextStyle(
+                                  color: globals.FocusedForeground,
+                                  fontSize: 16
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _group.desc,
+                                  maxLines: null,
+                                  style: const TextStyle(
+                                    color: globals.FocusedForeground,
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        ],
+                      ),
                     )
-                  )
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _group.hostName,
-                  style: const TextStyle(
-                    color: globals.FocusedForeground,
-                    fontSize: 16
                   ),
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _group.desc,
-                    maxLines: null,
-                    style: const TextStyle(
-                      color: globals.FocusedForeground,
-                    )
+                  // Buttons
+                  Container(
+                    width: 60,
+                    margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.bottomRight,
+                        end: Alignment.topLeft,
+                        stops: [
+                          0.0,
+                          0.5
+                        ],
+                        colors: [
+                          globals.ListViewItemBackgroundColors1,
+                          globals.ListViewItemBackgroundColors2,
+                        ]
+                      ),
+                      borderRadius: globals.DefaultRadius,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: globals.ShadowColor,
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                          offset: Offset(6, 8)
+                        )
+                      ]
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          height: 45,
+                          child: firstButtonWidget()
+                        ),
+                        const SizedBox(
+                          height: 45,
+                          child: StarAnim(
+                            beginSize: 24,
+                            endSize: 36,
+                            fromColor: Colors.grey,
+                            toColor: Colors.yellow,
+                            stroke: 8,
+                            storkeFromColor: Colors.grey,
+                            storkeToColor: Color.fromARGB(255, 235, 133, 0)
+                          )
+                        ),
+                        const SizedBox(
+                          height: 45,
+                          child: HeartAnim(
+                            beginSize: 24, 
+                            endSize: 36,
+                            fromColor: Colors.grey,
+                            toColor: Color.fromARGB(255, 255, 209, 230),
+                            stroke: 8,
+                            storkeFromColor: Colors.grey,
+                            storkeToColor: Colors.red,
+                          )
+                        ),
+                        SizedBox(
+                          height: 45,
+                          child: IconButton(
+                            onPressed: () {}, 
+                            icon: const Icon(Icons.report),
+                            color: Colors.red,
+                          ),
+                        )
+                      ]
+                    ),
                   )
-                )
-              )
-            )
-          ],
-        ),
+                ],
+              ),
+            ),
+          ]
+        )
       )
     );
   }
@@ -379,9 +504,16 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             "/group_manage",
             arguments: {
               "storage": _storage,
-              "requests": _requests
+              "requests": _requests,
+              "user": _user
             }
-          );
+          ).then((value) {
+            generateGroup();
+
+            if (_user.id == _group.id) {
+              generateJoinRequests();
+            }
+          });
         },
         icon: const Icon(
           Icons.settings,
@@ -421,80 +553,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget buttonsWidget() {
-    return Container(
-      width: 60,
-      margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.bottomRight,
-          end: Alignment.topLeft,
-          stops: [
-            0.0,
-            0.5
-          ],
-          colors: [
-            globals.ListViewItemBackgroundColors1,
-            globals.ListViewItemBackgroundColors2,
-          ]
-        ),
-        borderRadius: globals.DefaultRadius,
-        boxShadow: const [
-          BoxShadow(
-            color: globals.ShadowColor,
-            blurRadius: 12,
-            spreadRadius: 1,
-            offset: Offset(6, 8)
-          )
-        ]
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          SizedBox(
-            height: 45,
-            child: firstButtonWidget()
-          ),
-          const SizedBox(
-            height: 45,
-            child: StarAnim(
-              beginSize: 24,
-              endSize: 36,
-              fromColor: Colors.grey,
-              toColor: Colors.yellow,
-              stroke: 8,
-              storkeFromColor: Colors.grey,
-              storkeToColor: Color.fromARGB(255, 235, 133, 0)
-            )
-          ),
-          const SizedBox(
-            height: 45,
-            child: HeartAnim(
-              beginSize: 24, 
-              endSize: 36,
-              fromColor: Colors.grey,
-              toColor: Color.fromARGB(255, 255, 209, 230),
-              stroke: 8,
-              storkeFromColor: Colors.grey,
-              storkeToColor: Colors.red,
-            )
-          ),
-          SizedBox(
-            height: 45,
-            child: IconButton(
-              onPressed: () {}, 
-              icon: const Icon(Icons.report),
-              color: Colors.red,
-            ),
-          )
-        ]
-      ),
-    );
-  }
-
-  Widget gestureBarWidget({
-      required double width,
-      required double height}) {      
+  Widget gestureBarWidget(double width, double height) {      
     return GestureDetector(
       onVerticalDragStart: (details) {
         _prevY = details.globalPosition.dy;
@@ -546,41 +605,15 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     );
   }
 
-  Widget postsWidget({
-      required double width,
-      required double height}) {
-    Widget lockWidget = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.lock_sharp,
-              color: globals.FocusedForeground,
-              size: _group.type ? 64 : 0,
-            ),
-            Text(
-              "똥닌겐 따위에게 권한은 없는데스우",
-              style: TextStyle(
-                color: globals.FocusedForeground,
-                fontSize: _group.type ? 18 : 0
-              )
-            )
-          ],
-        )
-      ]
-    );
-
-    const double margin = 10;
-    final double actualWidth = width - margin - margin;
-
+  Widget postsWidget(double width, double height) {
     return Expanded(
       child: Stack(
         children: [          
           Container(
-            child: _blocked ? lockWidget :
-            _loaded ? createPostListView(
+            child: !_subsLoaded ? loading() :
+            _blocked ? locked(isPrivate: _group.type, fontColor: Colors.black) : 
+            !_postsLoaded ? loading() :
+            createPostListView(
               posts: _posts, 
               onTab: (index) {
                 Navigator.pushNamed(
@@ -590,99 +623,29 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                     "storage": _storage,
                     "post": _posts[index],
                   }
-                );
+                ).then((value) {
+                  if (_user.id == _group.id) {
+                    generateJoinRequests();
+                  }
+                });
               }, 
               height: height, 
               titleHeight: 40, 
               imageSize: 40, 
-              tagsWidth: actualWidth, 
+              tagsWidth: width, 
               tagsHeight: 20,
               maxLines: 3,
-              margin: const EdgeInsets.fromLTRB(margin, 5, margin, 5),
+              margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
               padding: const EdgeInsets.all(10),
               viewItemPadding: const EdgeInsets.only(top: 20, bottom: 110),
               titleFontSize: 18
-            ) : loading()
+            )
           ),
-          Container(
-            width: width,
-            height: 30,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  globals.BackgroundColor,
-                  Color.fromARGB(0, 233, 232, 232),
-                ]
-              )
-            ),
+          cretaeFadeOut(
+            globals.BackgroundColor,
+            const Color.fromARGB(0, 233, 232, 232)
           )
         ]
-      )
-    );
-  }
-
-  Widget addPostButtonWidget() {
-    return Positioned(
-      bottom: 30,
-      right: 30,
-      child: GestureDetector(
-        onTap: () {
-          if (_blocked) return;          
-          if (_unqualified) {
-            showAlertDialog(
-              context: context,
-              text: "팀에 소속되어 있지 않습니다. \n글을 작성하시려면 먼저 팀에 가입해주세요.",
-              fontColor: globals.FocusedForeground,
-              backgroundColor: globals.DialogBackgroundColor,
-              borderRadius: globals.DefaultRadius
-            );
-            return;
-          }
-          Navigator.pushNamed(
-            context, "/write_post", 
-            arguments: {
-              "user": _user,
-              "group": _group
-            }
-          );
-        },
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.bottomRight,
-              end: Alignment.topLeft,
-              stops: [
-                0.2,
-                0.6
-              ],
-              colors: [
-                globals.AddPostButtonBackgroundColors1,
-                globals.AddPostButtonBackgroundColors2,
-              ]
-            ),
-            boxShadow: [          
-              BoxShadow(
-                color: globals.ShadowColor,
-                spreadRadius: 2,
-                blurRadius: 16,
-                offset: Offset(4, 4)
-              ),
-            ]
-          ),
-          child: Transform.rotate(
-            angle: _blocked ? (45 * globals.DegToRad) : 0,
-            child: Icon(
-              Icons.add,
-              color: _blocked ? globals.UnfocusedForeground : globals.FocusedForeground,
-              size: 50
-            )
-          )
-        )
       )
     );
   }

@@ -2,16 +2,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
+import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
 import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
 import 'dart:math' as math;
-import 'package:http/http.dart' as http;
 
 class WritePostPage extends StatefulWidget {
-  static double MaxHeight = 140;
+  static const double MaxHeight = 140;
 
   const WritePostPage({Key? key}) : super(key: key);
 
@@ -21,6 +21,8 @@ class WritePostPage extends StatefulWidget {
 
 class _WritePostPageState extends State<WritePostPage> with SingleTickerProviderStateMixin {
   Map _receivedData = {};
+
+  late KeyValueStorage _storage;
 
   String _title = "";
   String _tags = "";
@@ -39,13 +41,15 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
   late User _user;
   late Group _group;
 
-  late BuildContext _context;
-
   bool _collapsed = false;
   bool _sending = false;
 
+  late double _deviceWidth;
+
   @override
   void initState() {
+    super.initState();
+    
     _middleHeight = WritePostPage.MaxHeight * 0.5;
     _currHeight = WritePostPage.MaxHeight;
 
@@ -76,32 +80,46 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
         }
       });
     });
-    super.initState();
   }
 
-  void send() async {
-    int statusCode = await writePost(_group.id, _tags, _user.token, _title, _desc);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
+    _deviceWidth = MediaQuery.of(context).size.width;
+
+    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+    _storage = _receivedData["storage"];
+    _user = _receivedData["user"];
+    _group = Group.fromJson(jsonDecode(_storage.get("group")));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _controller.dispose();
+  }
+
+  void onSendButtonClicked() async {
+    int statusCode = await writePost(
+      _group.id,
+      _tags, 
+      _user.token, 
+      _title, 
+      _desc
+    );
+    _sending = false;
     if (statusCode != 200) {
-      _sending = false;
       print("error occured: " + statusCode.toString());
       return;
     }
 
-    Navigator.pop(_context);
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    _context = context;
-
-    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-
-    _user = _receivedData["user"];
-    _group = _receivedData["group"];
-    
-    double deviceWidth = MediaQuery.of(context).size.width;
-
     return MaterialApp(
       home: Scaffold(        
         appBar: createAppBar(
@@ -116,7 +134,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
               func: () {
                 if (!_sending) {
                   _sending = true;   
-                  send();
+                  onSendButtonClicked();
                 }
               }
             )
@@ -138,7 +156,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
                       fit: BoxFit.none,
                       clipBehavior: Clip.hardEdge,
                       child: SizedBox(
-                        width: deviceWidth,
+                        width: _deviceWidth,
                         height: WritePostPage.MaxHeight,
                         child: Column(
                           children: [
@@ -331,7 +349,7 @@ class _WritePostPageState extends State<WritePostPage> with SingleTickerProvider
              setState(() {
                _desc = text;
              });
-          },
+          }
         )
       )
     );

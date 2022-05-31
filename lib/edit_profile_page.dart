@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
+import 'package:flutter_application_learning/components/text_divider.dart';
 import 'package:flutter_application_learning/entries/app_bar_btn.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
@@ -34,17 +35,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
 
     _storage = _receivedData["storage"];
-
     _user = User.fromJson(jsonDecode(_storage.get("user")));
+
     _desc = _user.userProfile.desc;
+
     super.didChangeDependencies();
   }
 
   void onEditButtonClicked() async {
-    int statusCode = await editProfile(_user.token, _desc);
+    int statusCode = await editProfile(
+      _user.token, 
+      _desc
+    );
+    _sending = false;
     if (statusCode != 200) {
       print("error occured: " + statusCode.toString());
-      _sending = false;
       return;
     }
 
@@ -123,28 +128,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   )
                 ),
               ),
-              SizedBox(
+              createTextDivider(
+                "소개글",
                 height: 40,
-                child: Row(
-                  children: const [
-                    Text(
-                      "소개글",
-                      style: TextStyle(
-                        color: globals.UnfocusedForeground
-                      )        
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: SizedBox(
-                        height: 1,
-                        child: Divider(
-                          color: globals.UnderlineColor,
-                          thickness: 1,
-                        )
-                      )
-                    )
-                  ]
-                )
+                fontColor: globals.UnfocusedForeground,
+                underlineColor: globals.UnderlineColor
               ),
               Expanded(
                 child: Padding(

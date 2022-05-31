@@ -22,12 +22,12 @@ class _AddGroupPageState extends State<AddGroupPage> {
   late KeyValueStorage _storage;
   late User _user;
 
-  FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _titleFocusNode = FocusNode();
   String _title = "";
   bool _titleFocused = false;
   bool _titleIsValid = true;
 
-  FocusNode _tagsFocusNode = FocusNode();
+  final FocusNode _tagsFocusNode = FocusNode();
   String _tags = "";
   bool _tagsFocused = false;
   bool _tagsIsValid = true;
@@ -38,6 +38,8 @@ class _AddGroupPageState extends State<AddGroupPage> {
 
   @override
   void initState() {
+    super.initState();
+
     _titleFocusNode.addListener(() {
       setState(() {
         _titleFocused = _titleFocusNode.hasFocus;
@@ -49,17 +51,15 @@ class _AddGroupPageState extends State<AddGroupPage> {
         _tagsFocused = _tagsFocusNode.hasFocus;
       });
     });
-
-    super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
-    _storage = _receivedData["stroage"];
-    _user = User.fromJson(jsonDecode(_storage.get("user")));
-
     super.didChangeDependencies();
+
+    _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
+    _storage = _receivedData["storage"];
+    _user = User.fromJson(jsonDecode(_storage.get("user")));
   }
 
   @override
@@ -70,7 +70,7 @@ class _AddGroupPageState extends State<AddGroupPage> {
     _tagsFocusNode.dispose();
   }
 
-  void onButtonClicked() async {
+  void onAddButtonClicked() async {
     bool isValid = true;
 
     setState(() {
@@ -96,10 +96,14 @@ class _AddGroupPageState extends State<AddGroupPage> {
       return;
     }
 
-    int statusCode = await addGroup(_user.token,  _title, _isPrivate, _tags);
-
+    int statusCode = await addGroup(
+      _user.token, 
+      _title, 
+      _isPrivate, 
+      _tags
+    );
+    _clicked = false;
     if (statusCode != 200) {
-      _clicked = false;
       print("error occured: " + statusCode.toString());
       return;
     }
@@ -123,7 +127,7 @@ class _AddGroupPageState extends State<AddGroupPage> {
               func: () {
                 if (!_clicked) {
                   _clicked = true;
-                  onButtonClicked();
+                  onAddButtonClicked();
                 }
               }
             )
@@ -145,7 +149,11 @@ class _AddGroupPageState extends State<AddGroupPage> {
                 height: 40, 
                 onChanged: (isCompleted) {
                   _isPrivate = isCompleted;
-                }
+                },
+                firstWord: "Public",
+                secondWord: "Private",
+                firstIcon: Icons.lock_open_rounded,
+                secondIcon: Icons.lock_rounded,
               )
             ]
           )
