@@ -28,10 +28,10 @@ class MyApp extends StatelessWidget {
 2-1 o
 2-2 o
 2-3 o
-2-4 ? - 공개팀은 정상작동하나 비공개팀은 오류
+2-4 o
 2-5 o
-2-6 x - 참가 요청 수락
-2-7 x -     "    거절
+2-6 o
+2-7 o
 2-8 o
 2-9 o
 

@@ -1,4 +1,18 @@
 
+class JoinRequests {
+  List<JoinRequest> requests;
+
+  JoinRequests({required this.requests});
+
+  JoinRequests.fromJson(List<dynamic> json)
+    : requests = List<JoinRequest>.from(json.map((j) => JoinRequest.fromJson(j)));
+
+  @override
+  String toString() {
+    return requests.toString();
+  }
+}
+
 class JoinRequest {
   String message;
   int requestId;

@@ -19,8 +19,8 @@ class _GroupManagementPageStaet extends State<GroupManagementPage> {
   Map _receivedData = {};
 
   late KeyValueStorage _storage;
-  late List<JoinRequest> _requests;
   late List<Menu> _menus;
+  late Group _group;
 
   @override
   void didChangeDependencies() {
@@ -28,7 +28,7 @@ class _GroupManagementPageStaet extends State<GroupManagementPage> {
 
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
     _storage = _receivedData["storage"];
-    _requests = _receivedData["requests"];
+    _group = _receivedData["group"];
 
     _menus = [
       Menu(
@@ -37,7 +37,7 @@ class _GroupManagementPageStaet extends State<GroupManagementPage> {
         routeName: "/permision",
         arguments: {
           "storage": _storage,
-          "requests": _requests
+          "group": _group,
         }
       ),
       Menu(

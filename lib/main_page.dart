@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
+import 'package:flutter_application_learning/components/pepe.dart';
 import 'package:flutter_application_learning/components/title_anim.dart';
 import 'package:flutter_application_learning/components/tab_btn_anim.dart';
 import 'package:flutter_application_learning/entries/subscriptions.dart';
@@ -38,6 +39,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   
   late PageController _pageController;
   late String _title;
+
+  bool _triggerd = false;
+  int _count = 0;
 
   @override
   void initState() {
@@ -93,24 +97,29 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   margin: const EdgeInsets.fromLTRB(5, 0, 5, 10),
                   padding: const EdgeInsets.fromLTRB(15, 0, 15, 0)
                 ),
-                body: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (index) { 
-                    if (!model.isTapped) {
-                      setState(() {
-                        _title = MainPage.TitleList[index];
-                      });
-                      model.updateIndex(index);
-                    }
-                    if (model.index == index) {
-                      model.isTapped = false;
-                    }
-                  },
-                  itemCount: globals.TabSize,
-                  itemBuilder: (_, index) {
-                    return pageList[index];
-                  }
-                ),
+                body: Stack(
+                  children: [
+                    PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (index) { 
+                        if (!model.isTapped) {
+                          setState(() {
+                            _title = MainPage.TitleList[index];
+                          });
+                          model.updateIndex(index);
+                        }
+                        if (model.index == index) {
+                          model.isTapped = false;
+                        }
+                      },
+                      itemCount: globals.TabSize,
+                      itemBuilder: (_, index) {
+                        return pageList[index];
+                      }
+                    ),
+                    _triggerd ? const PepeRain() : const SizedBox()
+                  ]
+                )
               );
             }
           )
@@ -172,6 +181,10 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   animDuration: globals.BasicAnimDuration,
                   callback: () {
                     if (model.index == index) {
+                      ++_count;
+                      if (_count >= 13) {
+                        _triggerd = true;
+                      }
                       return;
                     }
                     setState(() {

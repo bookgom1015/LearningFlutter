@@ -62,7 +62,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   bool _requesting = false;
 
   int _requestCount = 0;
-  List<JoinRequest> _requests = [];
+  late JoinRequests _requests;
+
+  late bool _isHost;
 
   @override
   void initState() {
@@ -115,11 +117,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     _group = _receivedData["group"];
     _user = User.fromJson(jsonDecode(_storage.get("user")));
 
+    _isHost = _group.hostId == _user.id;
+
     _storage.set("group", _group.toString());
     
     generateSubs();
     
-    if (_user.id == _group.id) {
+    if (_isHost) {
       generateJoinRequests();
     }
   }
@@ -138,6 +142,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
     _requesting = false;
     if (statusCode != 200) {
       print("error occured: " + statusCode.toString());
+      showAlertDialog(context: context, text: "참요 요청 전송 실패");
       return;
     }
 
@@ -208,8 +213,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
       _group.id,
       (list) {
         _requests = list;
+        _storage.set("requests", _requests.toString());
         setState(() {
-          _requestCount = _requests.length;
+          _requestCount = _requests.requests.length;
         });
       }
     );
@@ -292,7 +298,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                         "user": _user,
                       }
                     ).then((value) {
-                      if (_user.id == _group.id) {
+                      if (_isHost) {
                         generateJoinRequests();
                       }
                     });
@@ -478,8 +484,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
   }
 
   Widget firstButtonWidget() {
-    bool isHost = _group.hostId == _user.id;
-    if (!isHost) {
+    if (!_isHost) {
       return IconButton(
         onPressed: () {
           if (!_requesting) {
@@ -504,13 +509,12 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
             "/group_manage",
             arguments: {
               "storage": _storage,
-              "requests": _requests,
+              "group": _group,
               "user": _user
             }
           ).then((value) {
             generateGroup();
-
-            if (_user.id == _group.id) {
+            if (_isHost) {
               generateJoinRequests();
             }
           });
@@ -624,7 +628,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> with SingleTickerPr
                     "post": _posts[index],
                   }
                 ).then((value) {
-                  if (_user.id == _group.id) {
+                  if (_isHost) {
                     generateJoinRequests();
                   }
                 });

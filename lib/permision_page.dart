@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_learning/components/fade_out.dart';
 import 'package:flutter_application_learning/components/http_helpers.dart';
 import 'package:flutter_application_learning/components/key_value_storage.dart';
 import 'package:flutter_application_learning/components/nav_bar.dart';
 import 'package:flutter_application_learning/components/globals.dart' as globals;
+import 'package:flutter_application_learning/entries/group.dart';
 import 'package:flutter_application_learning/entries/join_request.dart';
 import 'package:flutter_application_learning/entries/user.dart';
 
@@ -18,11 +20,15 @@ class _PermisionPageState extends State<PermisionPage> {
   Map _receivedData = {};
 
   late KeyValueStorage _storage;
+  late Group _group;
+  late User _user;
 
-  List<JoinRequest> _requests = [];
+  late JoinRequests _requests;
   Map<int, User> _users = {};
 
   bool _loaded = false;
+  bool _permitButtonClicked = false;
+  bool _rejectButtonClicked = false;
 
   @override
   void didChangeDependencies() {
@@ -30,14 +36,52 @@ class _PermisionPageState extends State<PermisionPage> {
 
     _receivedData = ModalRoute.of(context)?.settings.arguments as Map;
     _storage = _receivedData["storage"];
-    _requests = _receivedData["requests"];
+    _group = _receivedData["group"];
+    _requests = JoinRequests.fromJson(jsonDecode(_storage.get("requests")));
+    _user = User.fromJson(jsonDecode(_storage.get("user")));
 
     generateUsers();
   }
 
+  void onPermitButtonClicked(int index) async {
+    int statusCode = await permitRequest(
+      _user.token, 
+      _group.id, 
+      _requests.requests[index].requestId
+    );
+    _permitButtonClicked = false;
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      return;
+    }
+
+    setState(() {
+      _requests.requests.removeAt(index);
+    });
+    _storage.set("request", _requests.toString());
+  }
+
+  void onRejectButtonClicked(int index) async {
+    int statusCode = await rejectRequest(
+      _user.token, 
+      _group.id, 
+      _requests.requests[index].requestId
+    );
+    _rejectButtonClicked = false;
+    if (statusCode != 200) {
+      print("error occured: " + statusCode.toString());
+      return;
+    }
+
+    setState(() {
+      _requests.requests.removeAt(index);
+    });
+    _storage.set("request", _requests.toString());
+  }
+
   void generateUsers() async {
-    for (int index = 0; index < _requests.length; ++index) {
-      int userId = _requests[index].userId;
+    for (int index = 0; index < _requests.requests.length; ++index) {
+      int userId = _requests.requests[index].userId;
       int statusCode = await getUserInfo(
         userId, 
         (data) {
@@ -72,7 +116,7 @@ class _PermisionPageState extends State<PermisionPage> {
             children: [
               ListView.builder(
                 padding: const EdgeInsets.only(top: 20),
-                itemCount: _requests.length,
+                itemCount: _requests.requests.length,
                 itemBuilder: (_, index) {
                   return Container(
                     height: 180,
@@ -117,7 +161,7 @@ class _PermisionPageState extends State<PermisionPage> {
                                     image: DecorationImage(
                                       image: AssetImage(
                                         _loaded ? 
-                                        _users[_requests[index].userId]!.userProfile.filePath : 
+                                        _users[_requests.requests[index].userId]!.userProfile.filePath : 
                                         "assets/images/champi_1_256x256.jpg"
                                       )
                                     )
@@ -125,7 +169,7 @@ class _PermisionPageState extends State<PermisionPage> {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  _loaded ? _users[_requests[index].userId]!.userNickname : ""
+                                  _loaded ? _users[_requests.requests[index].userId]!.userNickname : ""
                                 )
                               ]
                             )
@@ -150,7 +194,12 @@ class _PermisionPageState extends State<PermisionPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () {
+                                  if (!_permitButtonClicked) {
+                                    _permitButtonClicked = true;
+                                    onPermitButtonClicked(index);
+                                  }
+                                },
                                 child: const Icon(
                                   Icons.check,
                                   color: Colors.green,
@@ -158,7 +207,12 @@ class _PermisionPageState extends State<PermisionPage> {
                                 )
                               ),
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () {
+                                  if (!_rejectButtonClicked) {
+                                    _rejectButtonClicked = true;
+                                    onRejectButtonClicked(index);
+                                  }
+                                },
                                 child: const Icon(
                                   Icons.close,
                                   color: Colors.red,

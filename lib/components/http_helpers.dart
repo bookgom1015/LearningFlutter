@@ -104,8 +104,8 @@ Future<int> addGroup(String token, String title, bool isPrivate, String tags) as
   uri.write("/api/team");
   String spaceless = tags.replaceAll(" ", "");
   var list = spaceless.split(",");
-  var response = await http.post(Uri.parse(
-    uri.toString()),
+  var response = await http.post(
+    Uri.parse(uri.toString()),
     headers: { "Content-Type": "application/json", "Authorization": token },
     body: jsonEncode({
       "name": title,
@@ -119,14 +119,13 @@ Future<int> addGroup(String token, String title, bool isPrivate, String tags) as
 Future<int> requestToJoin(String token, int teamId) async {
   StringBuffer uri = StringBuffer();
   uri.write(globals.SpringUriPath);
-  uri.write("/api/team/");
-  uri.write(teamId);
-  uri.write("/join");
+  uri.write("/api/team/"); uri.write(teamId); uri.write("/join");
+  print(uri.toString());
   var response = await http.post(
     Uri.parse(uri.toString()),
     headers: { "Content-Type": "application/json", "Authorization": token },
     body: jsonEncode({
-      "description": "가입시켜줘 시발련아"
+      "description": "hello"
     })
   ); 
   return response.statusCode;
@@ -264,7 +263,7 @@ Future<int> addReply(String token, int teamId, int postId, String reply) async {
   return response.statusCode;
 }
 
-Future<int> getJoinRequests(String token, int teamId, void Function(List<JoinRequest> list) onFinished) async {
+Future<int> getJoinRequests(String token, int teamId, void Function(JoinRequests list) onFinished) async {
   StringBuffer uri = StringBuffer();
   uri.write(globals.SpringUriPath);
   uri.write("/api/team/"); uri.write(teamId); uri.write("/join"); 
@@ -275,11 +274,8 @@ Future<int> getJoinRequests(String token, int teamId, void Function(List<JoinReq
   if (response.statusCode != 200) {
     return response.statusCode;  
   }
-  dynamic jsonArray = jsonDecode(response.body);  
-  List<JoinRequest> requests = [];
-  for (var json in jsonArray) {
-    requests.add(JoinRequest.fromJson(json));
-  }
+  List<dynamic> jsonArray = jsonDecode(response.body);  
+  JoinRequests requests = JoinRequests.fromJson(jsonArray);
   onFinished(requests);
   return response.statusCode;
 }
@@ -333,5 +329,29 @@ Future<int> getGroupInfo(int teamId, void Function(Group data) onFinished) async
   dynamic json = jsonDecode(response.body);  
   Group gruop = Group.fromJson(json);
   onFinished(gruop);
+  return response.statusCode;
+}
+
+Future<int> permitRequest(String token, int teamId, int joinId) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId);
+  uri.write("/join/"); uri.write(joinId);
+  var response = await http.post(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json", "Authorization": token },
+  );
+  return response.statusCode;
+}
+
+Future<int> rejectRequest(String token, int teamId, int joinId) async {
+  StringBuffer uri = StringBuffer();
+  uri.write(globals.SpringUriPath);
+  uri.write("/api/team/"); uri.write(teamId);
+  uri.write("/join/"); uri.write(joinId);
+  var response = await http.delete(
+    Uri.parse(uri.toString()),
+    headers: { "Content-Type": "application/json", "Authorization": token },
+  );
   return response.statusCode;
 }
